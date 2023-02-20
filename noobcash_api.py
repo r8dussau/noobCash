@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-from Crypto.PublicKey import RSA
+from Crypto.PublicKey import RSA  #pip install pycryptodome
 
 
 #---------------------------------------------------------------------------------------------------------------
@@ -22,18 +22,12 @@ class Block:
         self.current_hash = current_hash
         self.previous_hash = previous_hash
         
-
+#Wallet class
 class Wallet:
-    def __init__(self, key_size):
-        self.key_size = key_size
-        self.key = RSA.generate(self.key_size)
-    
-    def get_public_key(self):
-        return self.key.publickey().export_key()
-    
-    def get_private_key(self):
-        return self.key.export_key()
-
+    def __init__(self, public_key, private_key):
+        self.public_key = public_key
+        self.private_key = private_key
+        self.NBC = 100
 
 #Transcation class
 class Transaction_Input:
@@ -57,8 +51,24 @@ class Transcaction:
 # Creates a new transaction that contains all necessary fields. 
 # The field transaction_inputs is filled with the Transactions that contain all ids of UTXOs
 # required to get the amount we want to spend. 
+def create_wallet(size):
+    key = RSA.generate(size)
+    public_key = key.publickey().export_key()
+    private_key = key.export_key()
+
+    return Wallet(public_key, private_key)
+
 def create_transaction():
     pass
+
+#---------------------------------------------------------------------------------------------------------------
+#Test ZOne
+
+wal1 = create_wallet(2048)
+wal2 = create_wallet(2048)
+
+# print(f"\n\nwal1:{wal1.private_key}\n\n")
+# print(f"wal2:{wal2.private_key}\n\n")
 
 
 #---------------------------------------------------------------------------------------------------------------
