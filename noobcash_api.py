@@ -1,7 +1,5 @@
 from flask import Flask, render_template
 from Crypto.PublicKey import RSA
-
-
 #---------------------------------------------------------------------------------------------------------------
 #Aciver l'environnement virtuel:
         #env_noobcash\Scripts\activate
@@ -45,19 +43,29 @@ class Transaction_Output:
         pass
 
 class Transcaction:
-    def __init__(self, sender_address, receiver_address, amount, transaction_id,
-                 transaction_inputs, transaction_outputs, signature):
+    def __init__(self, sender_address, receiver_address, amount, transaction_inputs, transaction_outputs):
         self.sender_address, self.receiver_address = sender_address, receiver_address
         self.amount = amount
-        self.transaction_id = transaction_id
+        self.transaction_id = None
         self.transaction_inputs, self.transaction_outputs = transaction_inputs, transaction_outputs
-        self.signature = signature
+        self.signature = None
 
 #---------------------------------------------------------------------------------------------------------------
 # Creates a new transaction that contains all necessary fields. 
 # The field transaction_inputs is filled with the Transactions that contain all ids of UTXOs
 # required to get the amount we want to spend. 
 def create_transaction():
+    
+    # Transaction(parametres)
+    # generate transaction_id: the transaction’s hash
+    # Transaction.transaction_id...
+    #return Transaction
+    pass
+
+def sign_transaction():
+    # gérer signature
+    # Transaction.signature = ...
+
     pass
 
 
