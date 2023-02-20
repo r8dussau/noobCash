@@ -117,7 +117,6 @@ def mine_block(block, difficulty):
 
         block.current_hash = hashlib.sha256(data).hexdigest()
         nonce += 1
-    print(vars(block))
 
 
 #---------------------------------------------------------------------------------------------------------------
@@ -133,19 +132,16 @@ wal2 = create_wallet(2048)
 #test mine_block
 block = Block(0,100,"000dendzojddnascnljbdczlcdc")
 mine_block(block,3)
-
-#test mine_block
-block = Block(0,100,"000dendzojddnascnljbdczlcdc")
-mine_block(block,3)
+#print(vars(block))
 
 #Test creation transaction:
 l_inputs=[]
 l_outputs=[]
 
-test_transaction = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
-sign_transaction(test_transaction,wal1)
-test_transaction2 = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
-sign_transaction(test_transaction2,wal1)
+# test_transaction = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
+# sign_transaction(test_transaction,wal1)
+# test_transaction2 = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
+# sign_transaction(test_transaction2,wal1)
 
 #---------------------------------------------------------------------------------------------------------------
 app= Flask(__name__)
