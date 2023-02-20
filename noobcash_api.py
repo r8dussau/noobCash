@@ -23,6 +23,17 @@ class Block:
         self.previous_hash = previous_hash
         
 
+class Wallet:
+    def __init__(self, key_size):
+        self.key_size = key_size
+        self.key = RSA.generate(self.key_size)
+    
+    def get_public_key(self):
+        return self.key.publickey().export_key()
+    
+    def get_private_key(self):
+        return self.key.export_key()
+
 
 #Transcation class
 class Transaction_Input:
@@ -56,27 +67,6 @@ app= Flask(__name__)
 @app.route('/noobcash', methods=['GET', 'POST'])
 def user():
     return render_template("user.html")
-
-
-class Wallet:
-    def __init__(self, key_size):
-        self.key_size = key_size
-        self.key = RSA.generate(self.key_size)
-    
-    def get_public_key(self):
-        return self.key.publickey().export_key()
-    
-    def get_private_key(self):
-        return self.key.export_key()
-        
-keygen = Wallet(2048)
-public_key = keygen.get_public_key()
-private_key = keygen.get_private_key()
-print(public_key)
-print(private_key)
-
-
-
 
 if __name__ == '__main__':
     app.run(debug=True, port=9103)
