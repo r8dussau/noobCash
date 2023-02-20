@@ -205,6 +205,8 @@ def validate_block(node, block):
     hash_result = hashlib.sha256(data).hexdigest()
 
     if (newBlock['previous_hash']==hash_result) and (newBlock['previous_hash'] == prevBlock['current_hash']):
+        #add list blockchain
+        pass
         
 
 #---------------------------------------------------------------------------------------------------------------
