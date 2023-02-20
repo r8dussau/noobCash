@@ -21,16 +21,15 @@ import time
 #Run l'app flask:
         #flask run
 
-#---------------------------------------------------------------------------------------------------------------
-#Initialisation
-
-index_iteration = 0
 
 #---------------------------------------------------------------------------------------------------------------
+
 #Block class
 class Block:
-    def __init__(self,index,transactions,previous_hash):
-        self.index = index
+    index = 0
+    def __init__(self,transactions,previous_hash):
+        Block.index += 1
+        self.index = Block.index
         self.timestamp = time.time()
         self.transactions = transactions
         self.nonce = 0
@@ -48,6 +47,14 @@ class Wallet:
         self.public_key = public_key
         self.private_key = private_key
         self.NBC = 100
+
+#Node class
+class Node:
+    id = 0
+    def __init__(self):
+        self.id = Node.id
+        Node.id += 1
+        self.wallet = create_wallet(self.id,2048)
 
 #Transcation class
 class Transaction_Input:
@@ -70,16 +77,17 @@ class Transaction:
 # Creates a new transaction that contains all necessary fields. 
 # The field transaction_inputs is filled with the Transactions that contain all ids of UTXOs
 # required to get the amount we want to spend. 
-def create_wallet(size):
+def create_wallet(nodeID, size):
+    id = nodeID
     key = RSA.generate(size)
     #Private Key writen in private_nodeNumber.pem
     private_key = key.export_key()
-    file_out = open("private_nodeNumber.pem", "wb")
+    file_out = open("private_"+str(id)+".pem", "wb")
     file_out.write(private_key)
     file_out.close()
     #Public Key writen in public_nodeNumber.pem
     public_key = key.publickey().export_key()
-    file_out = open("public_nodeNumber.pem", "wb")
+    file_out = open("public_"+str(id)+".pem", "wb")
     file_out.write(public_key)
     file_out.close()
 
@@ -135,13 +143,19 @@ def mine_block(block, difficulty):
         block.current_hash = hashlib.sha256(data).hexdigest()
         nonce += 1
 
+    broadcast_block(block)
+
+def broadcast_block(block):
+
+    pass
 
 #---------------------------------------------------------------------------------------------------------------
 #Test ZOne
 
 #test create_wallet
-wal1 = create_wallet(2048)
-print(wal1.private_key)
+node1 = Node()
+#wal1 = create_wallet(2048)
+#print(wal1.private_key)
 
 # print(f"\n\nwal1:{wal1.private_key}\n\n")
 # print(f"wal2:{wal2.private_key}\n\n")
@@ -156,8 +170,27 @@ l_inputs=[]
 l_outputs=[]
 
 test_transaction = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
-sign_transaction(test_transaction,wal1)
-verify_signature(test_transaction)
+# sign_transaction(test_transaction,wal1)
+# verify_signature(test_transaction)
+# print(f"\n\nwal1:{wal1.private_key}\n\n")
+# print(f"wal2:{wal2.private_key}\n\n")
+
+#Test creation transaction:
+l_inputs=[]
+l_outputs=[]
+# test_transaction = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
+# sign_transaction(test_transaction,wal1)
+# test_transaction2 = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
+# sign_transaction(test_transaction2,wal1)
+
+#test mine_block
+# block1 = Block(100,"000dendzojddnascnljbdczlcdc")
+# block2 =Block(200,"000dendzojgdvdcdddnascnljbdczlcdc")
+# mine_block(block1,3)
+# mine_block(block2,3)
+# print(vars(block1))
+# print(vars(block2))
+
 
 #---------------------------------------------------------------------------------------------------------------
 app= Flask(__name__)
