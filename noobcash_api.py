@@ -1,7 +1,12 @@
 from flask import Flask, render_template
-from Crypto.PublicKey import RSA #pip install pycroptodome
+
+#Pycryptodome
+#pip install pycroptodome 
+#doc:https://pycryptodome.readthedocs.io/en/latest/
+from Crypto.PublicKey import RSA 
 
 import hashlib
+import json
 import time
 
 #---------------------------------------------------------------------------------------------------------------
@@ -44,14 +49,14 @@ class Wallet:
 
 #Transcation class
 class Transaction_Input:
-    def __init__(self) -> None:
+    def __init__(self):
         pass
         
 class Transaction_Output:
-    def __init__(self) -> None:
+    def __init__(self):
         pass
 
-class Transcaction:
+class Transaction:
     def __init__(self, sender_address, receiver_address, amount, transaction_inputs, transaction_outputs):
         self.sender_address, self.receiver_address = sender_address, receiver_address
         self.amount = amount
@@ -65,24 +70,38 @@ class Transcaction:
 # required to get the amount we want to spend. 
 def create_wallet(size):
     key = RSA.generate(size)
-    public_key = key.publickey().export_key()
     private_key = key.export_key()
+    public_key = key.publickey().export_key()
 
     return Wallet(public_key, private_key)
 
-def create_transaction():
+def create_transaction(sender_address, receiver_address, amount, transaction_inputs,transaction_outputs):
     
-    # Transaction(parametres)
-    # generate transaction_id: the transaction’s hash
-    # Transaction.transaction_id...
-    #return Transaction
+    # Generate object Transaction
+    newTransaction = Transaction(sender_address, receiver_address, amount, transaction_inputs,transaction_outputs)
+    
+
+    #Generate transaction_id with hash
+    data = (str(sender_address) + str(receiver_address) + str(amount)).encode()
+    # for transaction_input in transaction_inputs:
+    #     data += transaction_input.previous_output_id.encode()
+    # for transaction_output in transaction_outputs:
+    #     data += transaction_output.id.encode()
+    transaction_id = hashlib.sha256(data).hexdigest()
+    print("transaction_id:", transaction_id)
+    newTransaction.transaction_id = transaction_id
+    return newTransaction
+
+
+def sign_transaction(transaction, wallet):
+    private_key=str(wallet.private_key).encode()
+    signature = hashlib.sha256(private_key).hexdigest()
+    print ("signature:", signature)
+    transaction.signature = signature
+
+def verify_signature(transaction):
     pass
 
-def sign_transaction():
-    # gérer signature
-    # Transaction.signature = ...
-
-    pass
 
 def wallet_balance():  
     pass
@@ -115,6 +134,18 @@ wal2 = create_wallet(2048)
 block = Block(0,100,"000dendzojddnascnljbdczlcdc")
 mine_block(block,3)
 
+#test mine_block
+block = Block(0,100,"000dendzojddnascnljbdczlcdc")
+mine_block(block,3)
+
+#Test creation transaction:
+l_inputs=[]
+l_outputs=[]
+
+test_transaction = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
+sign_transaction(test_transaction,wal1)
+test_transaction2 = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
+sign_transaction(test_transaction2,wal1)
 
 #---------------------------------------------------------------------------------------------------------------
 app= Flask(__name__)
@@ -123,5 +154,7 @@ app= Flask(__name__)
 def user():
     return render_template("user.html")
 
+# if __name__ == '__main__':
+#     app.run(debug=True, port=9103)
 # if __name__ == '__main__':
 #     app.run(debug=True, port=9103)
