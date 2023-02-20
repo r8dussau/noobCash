@@ -6,11 +6,7 @@ from flask import Flask, render_template
 from Crypto.PublicKey import RSA
 
 import hashlib
-<<<<<<< HEAD
-=======
-import json
 import time
->>>>>>> 85a0902cf82fcdd98d778c831723f6bffa165ed0
 
 #---------------------------------------------------------------------------------------------------------------
 #Aciver l'environnement virtuel:
