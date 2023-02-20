@@ -3,7 +3,7 @@ from flask import Flask, render_template
 #Pycryptodome
 #pip install pycroptodome 
 #doc:https://pycryptodome.readthedocs.io/en/latest/
-from Crypto.PublicKey import RSA
+from Crypto.PublicKey import RSA 
 
 import hashlib
 import time
