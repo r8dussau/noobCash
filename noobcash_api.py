@@ -6,7 +6,6 @@ from flask import Flask, render_template
 from Crypto.PublicKey import RSA 
 
 import hashlib
-import json
 import time
 
 #---------------------------------------------------------------------------------------------------------------
@@ -19,16 +18,15 @@ import time
 #Run l'app flask:
         #flask run
 
-#---------------------------------------------------------------------------------------------------------------
-#Initialisation
-
-index_iteration = 0
 
 #---------------------------------------------------------------------------------------------------------------
+
 #Block class
 class Block:
-    def __init__(self,index,transactions,previous_hash):
-        self.index = index
+    index = 0
+    def __init__(self,transactions,previous_hash):
+        Block.index += 1
+        self.index = Block.index
         self.timestamp = time.time()
         self.transactions = transactions
         self.nonce = 0
@@ -46,6 +44,13 @@ class Wallet:
         self.public_key = public_key
         self.private_key = private_key
         self.NBC = 100
+
+#Node class
+class Node(Wallet):
+    id = 0
+    def __init__(self):
+        self.id = f"id {Node.id}"
+        Node.id += 1
 
 #Transcation class
 class Transaction_Input:
@@ -118,6 +123,11 @@ def mine_block(block, difficulty):
         block.current_hash = hashlib.sha256(data).hexdigest()
         nonce += 1
 
+    broadcast_block(block)
+
+def broadcast_block(block):
+
+    pass
 
 #---------------------------------------------------------------------------------------------------------------
 #Test ZOne
@@ -125,23 +135,25 @@ def mine_block(block, difficulty):
 #test create_wallet
 wal1 = create_wallet(2048)
 wal2 = create_wallet(2048)
-
 # print(f"\n\nwal1:{wal1.private_key}\n\n")
 # print(f"wal2:{wal2.private_key}\n\n")
-
-#test mine_block
-block = Block(0,100,"000dendzojddnascnljbdczlcdc")
-mine_block(block,3)
-#print(vars(block))
 
 #Test creation transaction:
 l_inputs=[]
 l_outputs=[]
-
 # test_transaction = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
 # sign_transaction(test_transaction,wal1)
 # test_transaction2 = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
 # sign_transaction(test_transaction2,wal1)
+
+#test mine_block
+# block1 = Block(100,"000dendzojddnascnljbdczlcdc")
+# block2 =Block(200,"000dendzojgdvdcdddnascnljbdczlcdc")
+# mine_block(block1,3)
+# mine_block(block2,3)
+# print(vars(block1))
+# print(vars(block2))
+
 
 #---------------------------------------------------------------------------------------------------------------
 app= Flask(__name__)
