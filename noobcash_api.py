@@ -3,7 +3,10 @@ from flask import Flask, render_template
 #Pycryptodome
 #pip install pycroptodome 
 #doc:https://pycryptodome.readthedocs.io/en/latest/
+from Crypto.Signature import pss
+from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
+from Crypto import Random
 
 import hashlib
 import time
@@ -69,37 +72,52 @@ class Transaction:
 # required to get the amount we want to spend. 
 def create_wallet(size):
     key = RSA.generate(size)
+    #Private Key writen in private_nodeNumber.pem
     private_key = key.export_key()
+    file_out = open("private_nodeNumber.pem", "wb")
+    file_out.write(private_key)
+    file_out.close()
+    #Public Key writen in public_nodeNumber.pem
     public_key = key.publickey().export_key()
+    file_out = open("public_nodeNumber.pem", "wb")
+    file_out.write(public_key)
+    file_out.close()
 
     return Wallet(public_key, private_key)
 
 def create_transaction(sender_address, receiver_address, amount, transaction_inputs,transaction_outputs):
-    
     # Generate object Transaction
     newTransaction = Transaction(sender_address, receiver_address, amount, transaction_inputs,transaction_outputs)
-    
-
     #Generate transaction_id with hash
     data = (str(sender_address) + str(receiver_address) + str(amount)).encode()
     # for transaction_input in transaction_inputs:
     #     data += transaction_input.previous_output_id.encode()
     # for transaction_output in transaction_outputs:
     #     data += transaction_output.id.encode()
-    transaction_id = hashlib.sha256(data).hexdigest()
+    transaction_id = SHA256.new(data).hexdigest()
     print("transaction_id:", transaction_id)
     newTransaction.transaction_id = transaction_id
     return newTransaction
 
 
 def sign_transaction(transaction, wallet):
-    private_key=str(wallet.private_key).encode()
-    signature = hashlib.sha256(private_key).hexdigest()
-    print ("signature:", signature)
+    message = (str(transaction.sender_address) + str(transaction.receiver_address) + str(transaction.amount)).encode()
+    key = RSA.import_key(open('private_nodeNumber.pem').read())
+    h = SHA256.new(message)
+    signature = pss.new(key).sign(h)
     transaction.signature = signature
 
+
 def verify_signature(transaction):
-    pass
+    key = RSA.import_key(open('public_nodeNumber.pem').read())
+    message = (str(transaction.sender_address) + str(transaction.receiver_address) + str(transaction.amount)).encode()
+    h = SHA256.new(message)
+    verifier = pss.new(key)
+    try:
+        verifier.verify(h, transaction.signature)
+        print ("The signature is authentic.")
+    except (ValueError, TypeError):
+        print ("The signature is not authentic.")
 
 
 def wallet_balance():  
@@ -123,24 +141,23 @@ def mine_block(block, difficulty):
 
 #test create_wallet
 wal1 = create_wallet(2048)
-wal2 = create_wallet(2048)
+print(wal1.private_key)
 
 # print(f"\n\nwal1:{wal1.private_key}\n\n")
 # print(f"wal2:{wal2.private_key}\n\n")
 
 #test mine_block
-block = Block(0,100,"000dendzojddnascnljbdczlcdc")
-mine_block(block,3)
-#print(vars(block))
+# block = Block(0,100,"000dendzojddnascnljbdczlcdc")
+# mine_block(block,3)
+# print(vars(block))
 
 #Test creation transaction:
 l_inputs=[]
 l_outputs=[]
 
-# test_transaction = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
-# sign_transaction(test_transaction,wal1)
-# test_transaction2 = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
-# sign_transaction(test_transaction2,wal1)
+test_transaction = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
+sign_transaction(test_transaction,wal1)
+verify_signature(test_transaction)
 
 #---------------------------------------------------------------------------------------------------------------
 app= Flask(__name__)
