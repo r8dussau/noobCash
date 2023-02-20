@@ -6,6 +6,11 @@ from flask import Flask, render_template
 from Crypto.PublicKey import RSA
 
 import hashlib
+<<<<<<< HEAD
+=======
+import json
+import time
+>>>>>>> 85a0902cf82fcdd98d778c831723f6bffa165ed0
 
 #---------------------------------------------------------------------------------------------------------------
 #Aciver l'environnement virtuel:
@@ -16,16 +21,27 @@ import hashlib
 
 #Run l'app flask:
         #flask run
+
+#---------------------------------------------------------------------------------------------------------------
+#Initialisation
+
+index_iteration = 0
+
 #---------------------------------------------------------------------------------------------------------------
 #Block class
 class Block:
-    def __init__(self,index,timestamp,transactions,nonce,current_hash,previous_hash):
+    def __init__(self,index,transactions,previous_hash):
         self.index = index
-        self.timestamp = timestamp
+        self.timestamp = time.time()
         self.transactions = transactions
-        self.nonce = nonce
-        self.current_hash = current_hash
+        self.nonce = 0
+        self.current_hash = ""
         self.previous_hash = previous_hash
+
+#Blockchain class
+class Blockchain:
+    def __init__(self):
+        self.validated_block = list()
         
 #Wallet class
 class Wallet:
@@ -90,23 +106,45 @@ def verify_signature(transaction):
     pass
 
 
+def wallet_balance():  
+    pass
+
+def mine_block(block, difficulty):
+    target = '0' * difficulty
+    nonce = 0
+
+    while block.current_hash[0:difficulty]!=target:
+        block.nonce = nonce
+        block.timestamp = time.time()
+        data = f"{block.timestamp}{block.transactions}{block.nonce}{block.previous_hash}".encode()
+
+        block.current_hash = hashlib.sha256(data).hexdigest()
+        nonce += 1
+
+
 #---------------------------------------------------------------------------------------------------------------
 #Test ZOne
 
+#test create_wallet
 wal1 = create_wallet(2048)
 wal2 = create_wallet(2048)
 
 # print(f"\n\nwal1:{wal1.private_key}\n\n")
 # print(f"wal2:{wal2.private_key}\n\n")
 
+#test mine_block
+block = Block(0,100,"000dendzojddnascnljbdczlcdc")
+mine_block(block,3)
+#print(vars(block))
+
 #Test creation transaction:
 l_inputs=[]
 l_outputs=[]
 
-test_transaction = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
-sign_transaction(test_transaction,wal1)
-test_transaction2 = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
-sign_transaction(test_transaction2,wal1)
+# test_transaction = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
+# sign_transaction(test_transaction,wal1)
+# test_transaction2 = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
+# sign_transaction(test_transaction2,wal1)
 
 #---------------------------------------------------------------------------------------------------------------
 app= Flask(__name__)
@@ -115,5 +153,7 @@ app= Flask(__name__)
 def user():
     return render_template("user.html")
 
+# if __name__ == '__main__':
+#     app.run(debug=True, port=9103)
 # if __name__ == '__main__':
 #     app.run(debug=True, port=9103)
