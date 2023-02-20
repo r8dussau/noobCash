@@ -57,20 +57,43 @@ class Node:
         self.wallet = create_wallet(self.id,2048)
 
 #Transcation class
+#Après la derneire fondu, ce que le recipient a recu
 class Transaction_Input:
-    def __init__(self):
-        pass
-        
+    def __init__(self,previous_outputID):
+        self.previous_outputID = previous_outputID
+
+# Une transaction = 2 output: -Ce que A donne à B                       EX:A a 1000 et donne 400 -> 1000 fond en 1)400 2)600, 1)part vers B
+#                             -Ce que A récupère (ce qu'il lui reste)   EX:A recoit 2)600
 class Transaction_Output:
-    def __init__(self):
-        pass
+    def __init__(self, transactionID, recipient_publicKey, amount):
+        self.transactionID = transactionID
+        self.recipient = recipient_publicKey
+        self.amount = amount
+        data = (str(self.transactionID) + str(self.recipient) + str(self.amount)).encode()
+        self.id = SHA256.new(data)
 
 class Transaction:
-    def __init__(self, sender_address, receiver_address, amount, transaction_inputs, transaction_outputs):
+    def __init__(self, transaction_id, sender_address, receiver_address, amount):
+        self.transaction_id = transaction_id
         self.sender_address, self.receiver_address = sender_address, receiver_address
         self.amount = amount
-        self.transaction_id = None
-        self.transaction_inputs, self.transaction_outputs = transaction_inputs, transaction_outputs
+        
+        #Input(s)
+        self.transaction_inputs=[]
+        for utxo in UTXOs:
+            if (utxo.recipient == self.sender_address):
+                input = Transaction_Input(utxo.id)
+                self.transaction_inputs.append(input)
+
+        #Outputs
+        #faire un wallet_balance(listnode[wallet.publicKey==sender_address])
+        balance = 100     
+        self.transaction_outputs = []
+        send_output = Transaction_Output(self.transaction_id, self.receiver_address, self.amount)
+        receive_output = Transaction_Output(self.transaction_id, self.sender_address, balance-self.amount)
+        self.transaction_outputs.append(send_output)
+        self.transaction_outputs.append(receive_output)
+
         self.signature = None
 
 #---------------------------------------------------------------------------------------------------------------
@@ -93,43 +116,60 @@ def create_wallet(nodeID, size):
 
     return Wallet(public_key, private_key)
 
-def create_transaction(sender_address, receiver_address, amount, transaction_inputs,transaction_outputs):
+def create_transaction(sender_address, receiver_address, amount, transaction_inputs, transaction_outputs):
     # Generate object Transaction
-    newTransaction = Transaction(sender_address, receiver_address, amount, transaction_inputs,transaction_outputs)
+    
     #Generate transaction_id with hash
     data = (str(sender_address) + str(receiver_address) + str(amount)).encode()
-    # for transaction_input in transaction_inputs:
-    #     data += transaction_input.previous_output_id.encode()
-    # for transaction_output in transaction_outputs:
-    #     data += transaction_output.id.encode()
+    for transaction_input in transaction_inputs:
+        data += transaction_input.previous_outputID.encode()
+    for transaction_output in transaction_outputs:
+        data += transaction_output.id.encode()
     transaction_id = SHA256.new(data).hexdigest()
     print("transaction_id:", transaction_id)
-    newTransaction.transaction_id = transaction_id
+    newTransaction = Transaction(transaction_id, sender_address, receiver_address, amount)
     return newTransaction
 
 
-def sign_transaction(transaction, wallet):
+def sign_transaction(transaction, node):
     message = (str(transaction.sender_address) + str(transaction.receiver_address) + str(transaction.amount)).encode()
-    key = RSA.import_key(open('private_nodeNumber.pem').read())
+    node_id = node.id
+    key = RSA.import_key(open('private_'+str(node_id)+'.pem').read())
     h = SHA256.new(message)
     signature = pss.new(key).sign(h)
     transaction.signature = signature
 
 
-def verify_signature(transaction):
-    key = RSA.import_key(open('public_nodeNumber.pem').read())
+def verify_signature(transaction, node):
+    node_id = node.id
+    key = RSA.import_key(open('public_'+str(node_id)+'.pem').read())
     message = (str(transaction.sender_address) + str(transaction.receiver_address) + str(transaction.amount)).encode()
     h = SHA256.new(message)
     verifier = pss.new(key)
     try:
         verifier.verify(h, transaction.signature)
         print ("The signature is authentic.")
+        return True
     except (ValueError, TypeError):
         print ("The signature is not authentic.")
+        return False
+
+def validate_transaction(transaction, node):
+    # Check if signature is good
+    if verify_signature(transaction, node):
+        # Check if the sender as the amount needed for the transaction
+        # for transaction_input in transaction_inputs:
+        pass
 
 
-def wallet_balance():  
-    pass
+
+
+
+def wallet_balance(wallet):  
+    balance = 0
+    for utxo in UTXOs:
+        if utxo.recipient == wallet.public_key:
+            balance+=utxo.amount
 
 def mine_block(block, difficulty):
     target = '0' * difficulty
@@ -151,8 +191,9 @@ def broadcast_block(block):
 
 #---------------------------------------------------------------------------------------------------------------
 #Test ZOne
-
+UTXOs = []
 #test create_wallet
+node0 = Node()
 node1 = Node()
 #wal1 = create_wallet(2048)
 #print(wal1.private_key)
@@ -170,8 +211,8 @@ l_inputs=[]
 l_outputs=[]
 
 test_transaction = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
-# sign_transaction(test_transaction,wal1)
-# verify_signature(test_transaction)
+sign_transaction(test_transaction,node0)
+verify_signature(test_transaction,node0)
 # print(f"\n\nwal1:{wal1.private_key}\n\n")
 # print(f"wal2:{wal2.private_key}\n\n")
 
