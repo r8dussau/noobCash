@@ -37,8 +37,6 @@ class Node:
         self.transaction = list()
         self.iteration = 0
 
-    """ def update(self):
-        self.iteration += 1 """
 
 #Block class
 class Block:
