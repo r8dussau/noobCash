@@ -40,7 +40,9 @@ class Node:
         
         #Create genesis block
         if self.id == 0:
-            genesisTransaction = create_transaction("0",self.wallet.public_key,100*len(nodes))
+            #genesis_utxo = Transaction_Output("genesis",self.wallet.public_key,100)
+            #self.UTXOs.append(genesis_utxo)
+            genesisTransaction = create_transaction("0",self.wallet.public_key,100,True)
             genesisBlock = (Block(time.time(),genesisTransaction,1))
             genesisBlock.current_hash="0"*64
             self.validateBlock.append(genesisBlock)
@@ -128,55 +130,57 @@ def create_wallet(nodeID, size):
 
     return Wallet(public_key, private_key)
 
-def create_transaction(sender_publicKey, receiver_publicKey, amount):
-    #Generate transaction_id with hash
-    data = (str(sender_publicKey) + str(receiver_publicKey) + str(amount)).encode()
-
-#Input(s)
-    balance = 0
-    transaction_inputs=[]
-    #Inputs:
-    #Cas de la genesisTransaction:
-    #
-    for node in nodes:
-        if node.wallet.public_key == sender_publicKey:
-            UTXOs = node.UTXOs
-    for utxo in UTXOs:
-        if (utxo.recipient_publicKey == sender_publicKey):
-            input = Transaction_Input(utxo.id)
-            balance += utxo.amount
-            transaction_inputs.append(input)
-            print('Une transaction  été détecter dans UTXO, je le balance dans inputs')
-
-
-    #Outputs
-    #Cas de la genesisTransaction
-    #Cas classique:
-    transaction_outputs = []
-    send_output = Transaction_Output("test", receiver_publicKey, amount)
-    receive_output = Transaction_Output("test", sender_publicKey, balance-amount)
-    transaction_outputs.append(send_output)
-    transaction_outputs.append(receive_output)
-
-    print("TAILLE de inputs:",len(transaction_inputs),'\n')
-    for transaction_input in transaction_inputs:
-        data += transaction_input.previous_outputID.encode()
-    print("TAILLE de outputs:",len(transaction_outputs))
-    for transaction_output in transaction_outputs:
-        data += transaction_output.transaction_id.encode()
-    transaction_id = SHA256.new(data).hexdigest()
-
-    #rename Transaction_outputs:
-    for transaction_output in transaction_outputs:
-        transaction_output.transaction_id = transaction_id
-
-    if balance-amount >= 0:
-        print('Assez de thunes')
-        newTransaction = Transaction(transaction_id, sender_publicKey, receiver_publicKey, amount, transaction_inputs, transaction_outputs)
+def create_transaction(sender_publicKey, receiver_publicKey, amount, isGenesis=False):
+    if isGenesis:
+        print('Création de la genesis transaction')
+        newTransaction =  Transaction("genesis", "0", receiver_publicKey, amount, [], [])
         return newTransaction
     else:
-        print('Pas assez de thunes',balance)
-        return None
+    
+        #Generate transaction_id with hash
+        data = (str(sender_publicKey) + str(receiver_publicKey) + str(amount)).encode()
+        balance = 0
+
+        #Inputs:
+        transaction_inputs=[]
+        #Cas classique:
+        for node in nodes:
+            if node.wallet.public_key == sender_publicKey:
+                UTXOs = node.UTXOs
+        for utxo in UTXOs:
+            if (utxo.recipient_publicKey == sender_publicKey):
+                input = Transaction_Input(utxo.id)
+                balance += utxo.amount
+                transaction_inputs.append(input)
+                print('Une transaction  été détecter dans UTXO, je le balance dans inputs')
+        #Outputs
+        #Cas classique:
+        transaction_outputs = []
+        send_output = Transaction_Output("test", receiver_publicKey, amount)
+        receive_output = Transaction_Output("test", sender_publicKey, balance-amount)
+        transaction_outputs.append(send_output)
+        transaction_outputs.append(receive_output)
+
+        print("TAILLE de inputs:",len(transaction_inputs),'\n')
+        for transaction_input in transaction_inputs:
+            data += transaction_input.previous_outputID.encode()
+        print("TAILLE de outputs:",len(transaction_outputs))
+        for transaction_output in transaction_outputs:
+            data += transaction_output.transaction_id.encode()
+        transaction_id = SHA256.new(data).hexdigest()
+
+        #rename Transaction_outputs:
+        for transaction_output in transaction_outputs:
+            transaction_output.transaction_id = transaction_id
+
+        #Check balance
+        if balance-amount >= 0:
+            print('Assez de thunes')
+            newTransaction = Transaction(transaction_id, sender_publicKey, receiver_publicKey, amount, transaction_inputs, transaction_outputs)
+            return newTransaction
+        else:
+            print('Pas assez de thunes',balance)
+            return None
 
 
 def sign_transaction(transaction, node):
