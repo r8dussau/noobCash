@@ -261,15 +261,15 @@ def validate_chain(newBlock, prevBlock):
 #---------------------------------------------------------------------------------------------------------------
 #Test ZOne
 #Listes des nodes:
-n = 1 #choose number of nodes with the front end
+n = 2 #choose number of nodes with the front end
 nodes = list()
 for i in range(n): 
     nodes.append(Node())
 blockchain = Blockchain()
 
 #Mettre 100 balles sur node0:
-# output0 = Transaction_Output("test",nodes[0].wallet.public_key,100)
-# nodes[0].UTXOs.append(output0)
+output0 = Transaction_Output("test",nodes[0].wallet.public_key,100)
+nodes[0].UTXOs.append(output0)
 
 test_transaction = create_transaction(nodes[0].wallet.public_key, nodes[1].wallet.public_key, 43)
 sign_transaction(test_transaction,nodes[0])
@@ -279,8 +279,6 @@ validate_transaction(test_transaction,nodes[0])
 b = wallet_balance(nodes[0].wallet)
 print("balance:",b)
 
-b = wallet_balance(nodes[0].wallet)
-print("balance:",b)
 
 for node in nodes:
     #Generation of the Genesis block
