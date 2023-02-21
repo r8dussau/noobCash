@@ -37,6 +37,18 @@ class Node:
         self.transaction = list()
         self.iteration = 0
         self.UTXOs = []
+        
+        #Create genesis block
+        if self.id == 0:
+            genesisTransaction = create_transaction("0",self.wallet.public_key,100*len(nodes))
+            genesisBlock = (Block(time.time(),genesisTransaction,1))
+            genesisBlock.current_hash="0"*64
+            self.validateBlock.append(genesisBlock)
+            #ajouter ce bloc à la blockchain
+        
+        self.jcurrentBlock = Block(time.time(),self.transaction,self.validateBlock[len(self.validateBlock)-1].current_hash)
+        #self.validateBlock.append(self.jcurrentBlock)
+
 
 
 #Block class
@@ -116,6 +128,9 @@ def create_transaction(sender_publicKey, receiver_publicKey, amount):
 #Input(s)
     balance = 0
     transaction_inputs=[]
+    #Inputs:
+    #Cas de la genesisTransaction:
+    #
     for node in nodes:
         if node.wallet.public_key == sender_publicKey:
             UTXOs = node.UTXOs
@@ -128,6 +143,8 @@ def create_transaction(sender_publicKey, receiver_publicKey, amount):
 
 
     #Outputs
+    #Cas de la genesisTransaction
+    #Cas classique:
     transaction_outputs = []
     send_output = Transaction_Output("test", receiver_publicKey, amount)
     receive_output = Transaction_Output("test", sender_publicKey, balance-amount)
@@ -247,23 +264,23 @@ def validate_block(node, block):
 #---------------------------------------------------------------------------------------------------------------
 #Test ZOne
 #Listes des nodes:
-n = 2 #choose number of nodes with the front end
+n = 1 #choose number of nodes with the front end
 nodes = list()
 for i in range(n): 
     nodes.append(Node())
 
 #Mettre 100 balles sur node0:
-output0 = Transaction_Output("test",nodes[0].wallet.public_key,100)
-nodes[0].UTXOs.append(output0)
+# output0 = Transaction_Output("test",nodes[0].wallet.public_key,100)
+# nodes[0].UTXOs.append(output0)
 
-test_transaction = create_transaction(nodes[0].wallet.public_key, nodes[1].wallet.public_key, 90)
-if test_transaction != None:
-    sign_transaction(test_transaction,nodes[0])
-    verify_signature(test_transaction,nodes[0])
-    validate_transaction(test_transaction,nodes[0])
+# test_transaction = create_transaction(nodes[0].wallet.public_key, nodes[1].wallet.public_key, 90)
+# if test_transaction != None:
+#     sign_transaction(test_transaction,nodes[0])
+#     verify_signature(test_transaction,nodes[0])
+#     validate_transaction(test_transaction,nodes[0])
 
-b = wallet_balance(nodes[0].wallet)
-print("balance:",b)
+# b = wallet_balance(nodes[0].wallet)
+# print("balance:",b)
 
 for node in nodes:
     #Generation of the Genesis block
