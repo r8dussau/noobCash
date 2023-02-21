@@ -117,12 +117,11 @@ def create_wallet(nodeID, size):
     return Wallet(public_key, private_key)
 
 def create_transaction(sender_publicKey, receiver_publicKey, amount):
-    # Generate object Transaction
-    
     #Generate transaction_id with hash
     data = (str(sender_publicKey) + str(receiver_publicKey) + str(amount)).encode()
 
 #Input(s)
+    balance = 0
     transaction_inputs=[]
     for node in nodes:
         if node.wallet.public_key == sender_publicKey:
@@ -130,13 +129,12 @@ def create_transaction(sender_publicKey, receiver_publicKey, amount):
     for utxo in UTXOs:
         if (utxo.recipient_publicKey == sender_publicKey):
             input = Transaction_Input(utxo.id)
-            print('boudin:',utxo.id)
+            balance += utxo.amount
             transaction_inputs.append(input)
-            print('Une transactiona  été détecter dans UTXO, je le balance dans inputs')
+            print('Une transaction  été détecter dans UTXO, je le balance dans inputs')
+
 
     #Outputs
-    #faire un wallet_balance(listnode[wallet.public_key==sender_publicKey])
-    balance = 100     
     transaction_outputs = []
     send_output = Transaction_Output("test", receiver_publicKey, amount)
     receive_output = Transaction_Output("test", sender_publicKey, balance-amount)
@@ -155,8 +153,13 @@ def create_transaction(sender_publicKey, receiver_publicKey, amount):
     for transaction_output in transaction_outputs:
         transaction_output.transaction_id = transaction_id
 
-    newTransaction = Transaction(transaction_id, sender_publicKey, receiver_publicKey, amount, transaction_inputs, transaction_outputs)
-    return newTransaction
+    if balance-amount >= 0:
+        print('Assez de thunes')
+        newTransaction = Transaction(transaction_id, sender_publicKey, receiver_publicKey, amount, transaction_inputs, transaction_outputs)
+        return newTransaction
+    else:
+        print('Pas assez de thunes',balance)
+        return None
 
 
 def sign_transaction(transaction, node):
@@ -177,7 +180,6 @@ def verify_signature(transaction, node):
     try:
         verifier.verify(h, transaction.signature)
         print ("The signature is authentic.")
-        node.UTXOs.append(transaction.transaction_outputs[1])
         return True
     except (ValueError, TypeError):
         print ("The signature is not authentic.")
@@ -186,14 +188,18 @@ def verify_signature(transaction, node):
 def validate_transaction(transaction, node):
     # Check if signature is good
     if verify_signature(transaction, node):
-        # Check if the sender as the amount needed for the transaction
-        # for transaction_input in transaction_inputs:
-        print("la signature est bien vérifiée")
-        # balance = wallet_balance(node.wallet)
-        # if transaction.amount >= balance:
-        #     print("Tu as assez de thunes gazié")
-        # else:
-        #     print("Tes sur la paille gazié")
+        print("La signature est bien vérifiée")
+        for input in transaction.transaction_inputs:
+            for utxo in node.UTXOs:
+                if input.previous_outputID != utxo.id:
+                    print("Pas valide")
+                    return False
+                else:
+                    node.UTXOs.remove(utxo)
+                    node.UTXOs.append(transaction.transaction_outputs[1])
+                    print('Valide')
+                    return True
+            
 
 
 def wallet_balance(wallet):  
@@ -202,7 +208,7 @@ def wallet_balance(wallet):
             if node.wallet.public_key == wallet.public_key:
                 UTXOs = node.UTXOs
     for utxo in UTXOs:
-        if utxo.recipient == wallet.public_key:
+        if utxo.recipient_publicKey == wallet.public_key:
             balance+=utxo.amount
     return balance
 
@@ -265,10 +271,16 @@ blockchain = Blockchain()
 # output0 = Transaction_Output("test",nodes[0].wallet.public_key,100)
 # nodes[0].UTXOs.append(output0)
 
-# test_transaction = create_transaction(nodes[0].wallet.public_key, nodes[1].wallet.public_key, 43)
-# sign_transaction(test_transaction,nodes[0])
-# verify_signature(test_transaction,nodes[0])
-# validate_transaction(test_transaction,nodes[0])
+test_transaction = create_transaction(nodes[0].wallet.public_key, nodes[1].wallet.public_key, 43)
+sign_transaction(test_transaction,nodes[0])
+verify_signature(test_transaction,nodes[0])
+validate_transaction(test_transaction,nodes[0])
+
+b = wallet_balance(nodes[0].wallet)
+print("balance:",b)
+
+b = wallet_balance(nodes[0].wallet)
+print("balance:",b)
 
 for node in nodes:
     #Generation of the Genesis block
