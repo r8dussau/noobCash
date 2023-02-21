@@ -1,4 +1,5 @@
 env_noobcash/
 __pycache__/
 # ignore all logs
+*.pem
 *.cfg
