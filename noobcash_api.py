@@ -170,7 +170,7 @@ def verify_signature(transaction, node):
     try:
         verifier.verify(h, transaction.signature)
         print ("The signature is authentic.")
-        node0.UTXOs.append(transaction.transaction_outputs[1])
+        node.UTXOs.append(transaction.transaction_outputs[1])
         return True
     except (ValueError, TypeError):
         print ("The signature is not authentic.")
@@ -241,54 +241,21 @@ def validate_block(node, block):
 #---------------------------------------------------------------------------------------------------------------
 #Test ZOne
 #Listes des nodes:
-nodes = []
-
-#mine_block + broadcast_block
-
-
-# block = Block(100)
-# mine_block(block,3,nodes)
-#node0
-# nodes.append(node0)
-#node1
-node1 = Node()
-nodes.append(node1)
-
-#Mettre 100 balles sur node0:
-output0 = Transaction_Output("test",node0.wallet.public_key,100)
-node0.UTXOs.append(output0)
-
-#test mine_block
-# block = Block(0,100,"000dendzojddnascnljbdczlcdc")
-# mine_block(block,3)
-# print(vars(block))
-
-#Test creation transaction:
-l_inputs=[]
-l_outputs=[]
-
-# test_transaction = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
-# sign_transaction(test_transaction,node0)
-# verify_signature(test_transaction,node0)
-# print(f"\n\nwal1:{wal1.private_key}\n\n")
-# print(f"wal2:{wal2.private_key}\n\n")
-
-#Test creation transaction:
-l_inputs=[]
-l_outputs=[]
-# test_transaction = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
-# sign_transaction(test_transaction,wal1)
-# test_transaction2 = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
-# sign_transaction(test_transaction2,wal1)
-
-n = 1 #choose number of nodes with the front end
+n = 2 #choose number of nodes with the front end
 nodes = list()
 for i in range(n): 
     nodes.append(Node())
 
+#Mettre 100 balles sur node0:
+output0 = Transaction_Output("test",nodes[0].wallet.public_key,100)
+nodes[0].UTXOs.append(output0)
+
+test_transaction = create_transaction(nodes[0].wallet.public_key, nodes[1].wallet.public_key, 43)
+sign_transaction(test_transaction,nodes[0])
+verify_signature(test_transaction,nodes[0])
+validate_transaction(test_transaction,nodes[0])
 
 for node in nodes:
-
     #Generation of the Genesis block
     if node.id==0:
         genesisBlock = Block(time.time(),[100*n],1) 
