@@ -39,7 +39,7 @@ class Node:
 
         self.capacity = 5 #call dans init
         self.difficulty = 3 #call dans init
-        
+        print(self.id)
         #Create genesis block
         if self.id == 0:
             #genesis_utxo = Transaction_Output("genesis",self.wallet.public_key,100)
