@@ -27,7 +27,6 @@ import time
 #Node class
 class Node:
     id = 0
-
     def __init__(self):
         self.id = Node.id
         Node.id += 1
@@ -35,19 +34,23 @@ class Node:
         self.ipPort = randint(0,5000)
         self.wallet = create_wallet(self.id,2048)
         self.validateBlock = list()
+        self.transaction = list()
+        self.iteration = 0
+
+    """ def update(self):
+        self.iteration += 1 """
 
 #Block class
 class Block:
     index = 0
-    def __init__(self,transactions):
+    def __init__(self, timestamp, transactions, prev_hash):
         Block.index += 1
         self.index = Block.index
-        self.timestamp = time.time()
+        self.timestamp = timestamp
         self.transactions = transactions
         self.nonce = 0
         self.current_hash = ""
-        self.previous_hash = '0'*64
-        self.capacity = 5
+        self.previous_hash = prev_hash
 
 #Blockchain class
 class Blockchain:
@@ -176,26 +179,32 @@ def wallet_balance(wallet):
         if utxo.recipient == wallet.public_key:
             balance+=utxo.amount
 
-def mine_block(block, difficulty):
-    target = '0' * difficulty
+def mine_block(node, difficulty, capacity):
     nonce = 0
-    #if block.capacity == len(block.transactions): #pas ici attente de toutes les fonctions transaction
-    while block.current_hash[0:difficulty] != '0'*difficulty:
-        block.nonce = nonce
-        block.timestamp = time.time()
-        data = f"{block.timestamp}{block.transactions}{block.nonce}{block.previous_hash}".encode()
+    if len(node.transaction) >= capacity: 
+        #create a block when there are at least 5 transaction in a node
+        block = Block(time.time(), node.transaction[0:5],vars(node.validateBlock[node.iteration-1])['current_hash'])
+        #remove 5 first element in the transaction list of the node
+        for i in range(5):
+            node.transaction.pop(0)
 
-        block.current_hash = hashlib.sha256(data).hexdigest()
-        nonce += 1
+        #proof of work
+        while block.current_hash[0:difficulty] != '0'*difficulty:
+            block.nonce = nonce
+           
+            data = f"{block.timestamp}{block.transactions}{block.nonce}{block.previous_hash}".encode()
 
-    broadcast_block(block, nodes)
+            block.current_hash = hashlib.sha256(data).hexdigest()
+            
+            nonce += 1
+
+        return block
 
 def broadcast_block(block, nodes):
     for node in nodes:
         node.validateBlock.append(block)
-        print(vars(node.validateBlock[0])['current_hash'])
-        print(vars(node.validateBlock[0])['previous_hash'])
-        #validate_block(node,block)
+        #node.update()
+        node.iteration += 1
 
 def validate_block(node, block):
     newBlock = vars(node.validateBlock[-1])
@@ -214,14 +223,12 @@ def validate_block(node, block):
 UTXOs = []
 
 #mine_block + broadcast_block
-nodes = list()
-for i in range(1): #5
-    nodes.append(Node())
 
-block = Block(100)
-mine_block(block,3,nodes)
+
+# block = Block(100)
+# mine_block(block,3,nodes)
 #test create_wallet
-node1 = Node()
+# node1 = Node()
 #wal1 = create_wallet(2048)
 #print(wal1.private_key)
 
@@ -237,9 +244,9 @@ node1 = Node()
 l_inputs=[]
 l_outputs=[]
 
-test_transaction = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
-sign_transaction(test_transaction,node0)
-verify_signature(test_transaction,node0)
+# test_transaction = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
+# sign_transaction(test_transaction,node0)
+# verify_signature(test_transaction,node0)
 # print(f"\n\nwal1:{wal1.private_key}\n\n")
 # print(f"wal2:{wal2.private_key}\n\n")
 
@@ -251,14 +258,43 @@ l_outputs=[]
 # test_transaction2 = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
 # sign_transaction(test_transaction2,wal1)
 
-#test mine_block
-block1 = Block(100)
-block2 =Block(200)
-# mine_block(block1,3)
-# mine_block(block2,3)
-# print(vars(block1))
-# print(vars(block2))
+n = 1 #choose number of nodes with the front end
+nodes = list()
+for i in range(n): 
+    nodes.append(Node())
 
+
+for node in nodes:
+
+    #Generation of the Genesis block
+    if node.id==0:
+        genesisBlock = Block(time.time(),[100*n],1) 
+        genesisBlock.current_hash = '0'*64
+
+    #simulation of the list transaction
+    node.transaction = [0,1,2,3,4,5,6,7,8,9,10,11]
+    
+broadcast_block(genesisBlock,nodes)
+print(nodes[0].iteration)
+
+#test mine_block
+block1 = mine_block(nodes[0],3,5)
+#print(vars(block1))
+broadcast_block(block1,nodes)
+#print(vars(nodes[0].validateBlock[nodes[0].iteration-1]))
+
+block2 = mine_block(nodes[0],3,5)
+#print(vars(block2))
+broadcast_block(block2,nodes)
+#print(vars(nodes[0].validateBlock[nodes[0].iteration-1]))
+
+for node in nodes:
+    for i in range(len(node.validateBlock)):
+        #print(f"{vars(node.validateBlock[block1.index-1])}\n")
+        print(f"{vars(node.validateBlock[i])}\n")
+
+
+# broadcast_block(block1,nodes)
 
 #---------------------------------------------------------------------------------------------------------------
 app= Flask(__name__)
