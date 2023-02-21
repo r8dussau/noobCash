@@ -34,7 +34,6 @@ class Node:
         self.ipPort = randint(0,5000)
         self.wallet = create_wallet(self.id,2048)
         self.validateBlock = list()
-        self.transaction = list()
         self.iteration = 0
         self.UTXOs = []
         
@@ -43,13 +42,19 @@ class Node:
             #genesis_utxo = Transaction_Output("genesis",self.wallet.public_key,100)
             #self.UTXOs.append(genesis_utxo)
             genesisTransaction = create_transaction("0",self.wallet.public_key,100,True)
+            output0 = Transaction_Output("genesis",self.wallet.public_key,100)
+            self.UTXOs.append(output0)
             genesisBlock = (Block(time.time(),genesisTransaction,1))
             genesisBlock.current_hash="0"*64
             self.validateBlock.append(genesisBlock)
-            #ajouter ce bloc à la blockchain
+            #ajouter aussi ce bloc à la blockchain
+        else:
+            self.validateBlock.append(nodes[0].validateBlock[0])
         
-        self.jcurrentBlock = Block(time.time(),self.transaction,self.validateBlock[len(self.validateBlock)-1].current_hash)
-        #self.validateBlock.append(self.jcurrentBlock)
+        self.jcurrentBlock = Block(time.time(),[],self.validateBlock[len(self.validateBlock)-1].current_hash)
+        self.validateBlock.append(self.jcurrentBlock)
+
+        print(len(self.validateBlock))
 
 
     def update(self):
@@ -220,8 +225,14 @@ def validate_transaction(transaction, node):
                     node.UTXOs.append(transaction.transaction_outputs[1])
                     print('Valide')
                     return True
-            
 
+def broadcast_transaction(transaction):
+    for node in nodes:
+        if len(node.jcurrentBlock.transactions)!=5:
+            node.jcurrentBlock.transactions.append(transaction)
+        else:
+            pass
+            
 
 def wallet_balance(wallet):  
     balance = 0
@@ -235,24 +246,17 @@ def wallet_balance(wallet):
 
 def mine_block(node, difficulty, capacity):
     nonce = 0
-    if len(node.transaction) >= capacity: 
-        #create a block when there are at least 5 transaction in a node
-        block = Block(time.time(), node.transaction[0:5],vars(node.validateBlock[node.iteration-1])['current_hash'])
-        #remove 5 first element in the transaction list of the node
-        for i in range(5):
-            node.transaction.pop(0)
+    #proof of work
+    while node.jcurrentBlock.current_hash[0:difficulty] != '0'*difficulty:
+        node.jcurrentBlock.nonce = nonce
+        
+        data = f"{node.jcurrentBlock.timestamp}{node.jcurrentBlock.transactions}{node.jcurrentBlock.nonce}{node.jcurrentBlock.previous_hash}".encode()
 
-        #proof of work
-        while block.current_hash[0:difficulty] != '0'*difficulty:
-            block.nonce = nonce
-           
-            data = f"{block.timestamp}{block.transactions}{block.nonce}{block.previous_hash}".encode()
+        node.jcurrentBlock.current_hash = hashlib.sha256(data).hexdigest()
+        
+        nonce += 1
 
-            block.current_hash = hashlib.sha256(data).hexdigest()
-            
-            nonce += 1
-
-        return block
+    return node.jcurrentBlock
 
 def broadcast_block(block, nodes):
     for node in nodes:
@@ -282,37 +286,35 @@ def validate_chain(newBlock, prevBlock):
 #---------------------------------------------------------------------------------------------------------------
 #Test ZOne
 #Listes des nodes:
-n = 1 #choose number of nodes with the front end
+n = 2 #choose number of nodes with the front end
 nodes = list()
 for i in range(n): 
     nodes.append(Node())
 blockchain = Blockchain()
 
-#Mettre 100 balles sur node0:
-# output0 = Transaction_Output("test",nodes[0].wallet.public_key,100)
-# nodes[0].UTXOs.append(output0)
+test_transaction = create_transaction(nodes[0].wallet.public_key, nodes[1].wallet.public_key, 90)
+if test_transaction != None:
+    sign_transaction(test_transaction,nodes[0])
+    verify_signature(test_transaction,nodes[0])
+    isValid = validate_transaction(test_transaction,nodes[0])
+    b = wallet_balance(nodes[0].wallet)
+    print("balance:",b)
 
-# test_transaction = create_transaction(nodes[0].wallet.public_key, nodes[1].wallet.public_key, 90)
-# if test_transaction != None:
-#     sign_transaction(test_transaction,nodes[0])
-#     verify_signature(test_transaction,nodes[0])
-#     validate_transaction(test_transaction,nodes[0])
 
-# b = wallet_balance(nodes[0].wallet)
-# print("balance:",b)
 
-for node in nodes:
-    #Generation of the Genesis block
-    if node.id==0:
-        genesisBlock = Block(time.time(),[100*n],1) 
-        genesisBlock.current_hash = '0'*64
 
-    #simulation of the list transaction
-    node.transaction = [0,1,2,3,4,5,6,7,8,9,10,11]
+# for node in nodes:
+#     #Generation of the Genesis block
+#     if node.id==0:
+#         genesisBlock = Block(time.time(),[100*n],1) 
+#         genesisBlock.current_hash = '0'*64
 
-blockchain.list.append(genesisBlock)
+#     #simulation of the list transaction
+#     node.transaction = [0,1,2,3,4,5,6,7,8,9,10,11]
 
-broadcast_block(genesisBlock,nodes)
+# blockchain.list.append(genesisBlock)
+
+#broadcast_block(genesisBlock,nodes)
 
 #test mine_block
 
