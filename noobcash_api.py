@@ -50,6 +50,13 @@ class Node:
         #self.validateBlock.append(self.jcurrentBlock)
 
 
+    def update(self):
+        if len(self.validateBlock) > 1:
+            validate_block(self.validateBlock[-1], self.validateBlock[-2])
+            
+        self.iteration += 1
+        
+        
 
 #Block class
 class Block:
@@ -66,7 +73,7 @@ class Block:
 #Blockchain class
 class Blockchain:
     def __init__(self):
-        self.validated_block = list()
+        self.list = list()
         
 #Wallet class
 class Wallet:
@@ -246,20 +253,27 @@ def mine_block(node, difficulty, capacity):
 def broadcast_block(block, nodes):
     for node in nodes:
         node.validateBlock.append(block)
-        #node.update()
-        node.iteration += 1
+        node.update()
 
-def validate_block(node, block):
-    newBlock = vars(node.validateBlock[-1])
-    prevBlock = vars(node.validateBlock[-2])
-
-    data = f"{block.timestamp}{block.transactions}{block.nonce}{block.previous_hash}".encode()
+def validate_block(newBlock, prevBlock):
+    
+    data = f"{newBlock.timestamp}{newBlock.transactions}{newBlock.nonce}{newBlock.previous_hash}".encode()
     hash_result = hashlib.sha256(data).hexdigest()
+    if hash_result != vars(newBlock)['current_hash']:
+        return False
 
-    if (newBlock['previous_hash']==hash_result) and (newBlock['previous_hash'] == prevBlock['current_hash']):
-        #add list blockchain
-        pass
-        
+    if vars(newBlock)['previous_hash'] != vars(prevBlock)['current_hash']:
+        return False
+    
+    blockchain.list.append(newBlock)
+
+    return True
+    
+def validate_chain(newBlock, prevBlock):
+    if validate_block(newBlock, prevBlock):
+        return True
+    else:
+        return False
 
 #---------------------------------------------------------------------------------------------------------------
 #Test ZOne
@@ -268,6 +282,7 @@ n = 1 #choose number of nodes with the front end
 nodes = list()
 for i in range(n): 
     nodes.append(Node())
+blockchain = Blockchain()
 
 #Mettre 100 balles sur node0:
 # output0 = Transaction_Output("test",nodes[0].wallet.public_key,100)
@@ -290,28 +305,30 @@ for node in nodes:
 
     #simulation of the list transaction
     node.transaction = [0,1,2,3,4,5,6,7,8,9,10,11]
-    
+
+blockchain.list.append(genesisBlock)
+
 broadcast_block(genesisBlock,nodes)
-print(nodes[0].iteration)
 
 #test mine_block
+
 block1 = mine_block(nodes[0],3,5)
 #print(vars(block1))
 broadcast_block(block1,nodes)
-#print(vars(nodes[0].validateBlock[nodes[0].iteration-1]))
 
 block2 = mine_block(nodes[0],3,5)
 #print(vars(block2))
 broadcast_block(block2,nodes)
-#print(vars(nodes[0].validateBlock[nodes[0].iteration-1]))
 
-for node in nodes:
-    for i in range(len(node.validateBlock)):
-        #print(f"{vars(node.validateBlock[block1.index-1])}\n")
-        print(f"{vars(node.validateBlock[i])}\n")
+# for node in nodes:
+#     for i in range(len(node.validateBlock)):
+#         print(f"{vars(node.validateBlock[i])}\n")
 
+# for i in range(len(blockchain.list)):
+#     if not validate_chain(blockchain.list[i+1],blockchain.list[i]):
+#         print("The chain is not valid")
 
-# broadcast_block(block1,nodes)
+print(blockchain.list)
 
 #---------------------------------------------------------------------------------------------------------------
 app= Flask(__name__)
