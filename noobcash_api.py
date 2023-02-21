@@ -37,6 +37,9 @@ class Node:
         self.transaction = list()
         self.iteration = 0
 
+    def update(self):
+        self.iteration += 1
+        validate_block(self.validateBlock[self.iteration], self.validateBlock[self.iteration-1])
 
 #Block class
 class Block:
@@ -168,9 +171,6 @@ def validate_transaction(transaction, node):
         pass
 
 
-
-
-
 def wallet_balance(wallet):  
     balance = 0
     for utxo in UTXOs:
@@ -201,8 +201,8 @@ def mine_block(node, difficulty, capacity):
 def broadcast_block(block, nodes):
     for node in nodes:
         node.validateBlock.append(block)
-        #node.update()
-        node.iteration += 1
+        node.update()
+        #node.iteration += 1
 
 def validate_block(node, block):
     newBlock = vars(node.validateBlock[-1])
@@ -256,7 +256,7 @@ l_outputs=[]
 # test_transaction2 = create_transaction(1111, 2222, 43, l_inputs, l_outputs)
 # sign_transaction(test_transaction2,wal1)
 
-n = 1 #choose number of nodes with the front end
+n = 2 #choose number of nodes with the front end
 nodes = list()
 for i in range(n): 
     nodes.append(Node())
@@ -273,7 +273,6 @@ for node in nodes:
     node.transaction = [0,1,2,3,4,5,6,7,8,9,10,11]
     
 broadcast_block(genesisBlock,nodes)
-print(nodes[0].iteration)
 
 #test mine_block
 block1 = mine_block(nodes[0],3,5)
