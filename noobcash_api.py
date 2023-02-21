@@ -22,7 +22,6 @@ import time
 #Run l'app flask:
         #flask run
 
-
 #---------------------------------------------------------------------------------------------------------------
 #Node class
 class Node:
@@ -38,13 +37,13 @@ class Node:
         self.iteration = 0
         self.UTXOs = []
 
+
     def update(self):
         if len(self.validateBlock) > 1:
             validate_block(self.validateBlock[-1], self.validateBlock[-2])
             
-        self.iteration += 1
-        
-        
+        self.iteration += 1    
+    
 
 #Block class
 class Block:
@@ -57,6 +56,8 @@ class Block:
         self.nonce = 0
         self.current_hash = ""
         self.previous_hash = prev_hash
+
+        self.node = 0
 
 #Blockchain class
 class Blockchain:
@@ -216,7 +217,7 @@ def mine_block(node, difficulty, capacity):
     nonce = 0
     if len(node.transaction) >= capacity: 
         #create a block when there are at least 5 transaction in a node
-        block = Block(time.time(), node.transaction[0:5],vars(node.validateBlock[node.iteration-1])['current_hash'])
+        block = Block(time.time(), node.transaction[0:5],vars(node.validateBlock[node.iteration-1])['current_hash']) #node.validateBlock[node.iteration-1].current_hash
         #remove 5 first element in the transaction list of the node
         for i in range(5):
             node.transaction.pop(0)
@@ -232,6 +233,7 @@ def mine_block(node, difficulty, capacity):
             nonce += 1
 
         return block
+
 
 def broadcast_block(block, nodes):
     for node in nodes:
@@ -271,13 +273,63 @@ blockchain = Blockchain()
 output0 = Transaction_Output("test",nodes[0].wallet.public_key,100)
 nodes[0].UTXOs.append(output0)
 
-test_transaction = create_transaction(nodes[0].wallet.public_key, nodes[1].wallet.public_key, 43)
-sign_transaction(test_transaction,nodes[0])
-verify_signature(test_transaction,nodes[0])
-validate_transaction(test_transaction,nodes[0])
+# test_transaction = create_transaction(nodes[0].wallet.public_key, nodes[1].wallet.public_key, 43)
+# sign_transaction(test_transaction,nodes[0])
+# verify_signature(test_transaction,nodes[0])
+# validate_transaction(test_transaction,nodes[0])
 
-b = wallet_balance(nodes[0].wallet)
-print("balance:",b)
+
+#-----------------------------------
+#Raph
+
+test_transaction1 = create_transaction(nodes[0].wallet.public_key, nodes[1].wallet.public_key, 43)
+sign_transaction(test_transaction1,nodes[0])
+verify_signature(test_transaction1,nodes[0])
+if validate_transaction(test_transaction1,nodes[0]):
+    for node in nodes:
+        node.transaction.append(test_transaction1)
+
+test_transaction2 = create_transaction(nodes[0].wallet.public_key, nodes[1].wallet.public_key, 21)
+sign_transaction(test_transaction2,nodes[0])
+verify_signature(test_transaction2,nodes[0])
+if validate_transaction(test_transaction2,nodes[0]):
+    for node in nodes:
+        node.transaction.append(test_transaction2)
+
+test_transaction3 = create_transaction(nodes[1].wallet.public_key, nodes[0].wallet.public_key, 50)
+sign_transaction(test_transaction3,nodes[1])
+verify_signature(test_transaction3,nodes[1])
+if validate_transaction(test_transaction3,nodes[1]):
+    for node in nodes:
+        node.transaction.append(test_transaction3)
+
+test_transaction4 = create_transaction(nodes[0].wallet.public_key, nodes[1].wallet.public_key, 2)
+sign_transaction(test_transaction4,nodes[0])
+verify_signature(test_transaction4,nodes[0])
+if validate_transaction(test_transaction4,nodes[0]):
+    for node in nodes:
+        node.transaction.append(test_transaction4)
+
+test_transaction5 = create_transaction(nodes[1].wallet.public_key, nodes[0].wallet.public_key, 3)
+sign_transaction(test_transaction5,nodes[1])
+verify_signature(test_transaction5,nodes[1])
+if validate_transaction(test_transaction5,nodes[1]):
+    for node in nodes:
+        node.transaction.append(test_transaction5)
+
+test_transaction6 = create_transaction(nodes[0].wallet.public_key, nodes[1].wallet.public_key, 1)
+sign_transaction(test_transaction6,nodes[0])
+verify_signature(test_transaction6,nodes[0])
+if validate_transaction(test_transaction6,nodes[0]):
+    for node in nodes:
+        node.transaction.append(test_transaction6)
+
+
+#-----------------------------------
+
+
+# b = wallet_balance(nodes[0].wallet)
+# print("balance:",b)
 
 
 for node in nodes:
@@ -287,21 +339,29 @@ for node in nodes:
         genesisBlock.current_hash = '0'*64
 
     #simulation of the list transaction
-    node.transaction = [0,1,2,3,4,5,6,7,8,9,10,11]
 
 blockchain.list.append(genesisBlock)
-
 broadcast_block(genesisBlock,nodes)
+
+        #print(vars(node.validateBlock[0]))
 
 #test mine_block
 
-block1 = mine_block(nodes[0],3,5)
+#block1 = mine_block(nodes[0],3,5)
 #print(vars(block1))
-broadcast_block(block1,nodes)
+#broadcast_block(block1,nodes)
 
-block2 = mine_block(nodes[0],3,5)
-#print(vars(block2))
-broadcast_block(block2,nodes)
+#block2 = mine_block(nodes[0],3,5)
+ #print(vars(block2))
+#broadcast_block(block2,nodes)
+
+# for node in nodes:
+#     block1 = mine_block(node,3,5)
+#     print(vars(block1))
+#     broadcast_block(block1,nodes)
+
+
+
 
 # for node in nodes:
 #     for i in range(len(node.validateBlock)):
@@ -311,7 +371,7 @@ broadcast_block(block2,nodes)
 #     if not validate_chain(blockchain.list[i+1],blockchain.list[i]):
 #         print("The chain is not valid")
 
-print(blockchain.list)
+#print(blockchain.list)
 
 #---------------------------------------------------------------------------------------------------------------
 app= Flask(__name__)
