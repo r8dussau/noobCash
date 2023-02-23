@@ -1,5 +1,4 @@
-from flask import Flask, render_template
-from multiprocessing import Process
+from flask import Flask, render_template, request, send_file
 
 #Pycryptodome
 #pip install pycroptodome 
@@ -7,7 +6,6 @@ from multiprocessing import Process
 from Crypto.Signature import pss
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
-from Crypto import Random
 from random import randint
 
 import hashlib
@@ -303,23 +301,8 @@ def validate_block(node):
 nodes = list()
 def createNode(nodes):
     nodes.append(Node())
-    for node in nodes:
-        print(node.id)
 blockchain = []
 
-""" test_transaction = create_transaction(nodes[0].wallet.public_key, nodes[1].wallet.public_key, 10)
-if test_transaction != None:
-    sign_transaction(test_transaction,nodes[0])
-    verify_signature(test_transaction,nodes[0])
-    isValid = validate_transaction(test_transaction,nodes[0])
-    broadcast_transaction(test_transaction)
-
-test_transaction1 = create_transaction(nodes[0].wallet.public_key, nodes[1].wallet.public_key, 10)
-if test_transaction1 != None:
-    sign_transaction(test_transaction1,nodes[0])
-    verify_signature(test_transaction1,nodes[0])
-    isValid = validate_transaction(test_transaction1,nodes[0])
-    broadcast_transaction(test_transaction1) """
 
 # createNode(nodes)
 # createNode(nodes)
@@ -345,7 +328,7 @@ def transaction(nodes, nodeSender, nodeRecever, amount, capacity):
         timeListSorted = dict(sorted(timeList.items(), key=lambda item:item[1], reverse=False))
         idGoodMinedBlock = list(timeListSorted.keys())[0]
         goodMinedBlock = list(mined.items())[idGoodMinedBlock][1]
-
+        print(goodMinedBlock)
         broadcast_block(goodMinedBlock)
 
         for node in nodes:
@@ -358,153 +341,4 @@ def transaction(nodes, nodeSender, nodeRecever, amount, capacity):
         timeListSorted = {}
         mined = {}
 
-# transaction(nodes, nodes[0], nodes[1], 10, 3)
-# transaction(nodes, nodes[0], nodes[1], 10, 3)
-# transaction(nodes, nodes[0], nodes[1], 10, 3)
-
-
-def minage(nodes):
-    timeList = {}
-    mined = {}
-    for node in nodes: 
-        if len(node.jcurrentBlock.transactions) == 2:
-            mined_block, finTime = mine_block(node,3)
-            timeList = timeList | {node.id : finTime}
-            mined = mined | {node.id : mined_block}
-        
-    timeListSorted = dict(sorted(timeList.items(), key=lambda item:item[1], reverse=False))
-    idGoodMinedBlock = list(timeListSorted.keys())[0]
-    goodMinedBlock = list(mined.items())[idGoodMinedBlock][1]
-
-    broadcast_block(goodMinedBlock)
-
-    for node in nodes:
-        if validate_block(node):
-                mined_block.index = len(node.validateBlocks)
-                node.validateBlocks.append(mined_block)
-        node.jcurrentBlock = Block(time.time(),[],mined_block.current_hash)
-
-    print(timeList)
-    print(timeListSorted)
-    print(mined)
-    print(goodMinedBlock)
-
-
-
-
-
-def node0():
-    print(f"ICI LE TEMPS 0: {time.time()}")
-    if len(nodes[0].jcurrentBlock.transactions) == 2:
-        mined_block = mine_block(nodes[0],2)
-        #print(mined_block)
-        """ broadcast_block(mined_block)
-        if validate_block(nodes[0]):
-            mined_block.index = len(nodes[0].validateBlocks)
-            nodes[0].validateBlocks.append(mined_block)
-        nodes[0].jcurrentBlock = Block(time.time(),[],mined_block.current_hash)
-
-        print ('LENnode0:',len(nodes[0].validateBlocks))
-        print ('node0:',nodes[0].validateBlocks[0].current_hash)
-        print ('node0:',nodes[0].validateBlocks[1].current_hash) """
-
-def node1():
-    print(f"ICI LE TEMPS 1: {time.time()}")
-    if len(nodes[1].jcurrentBlock.transactions) == 2:
-        mined_block = mine_block(nodes[1],2)
-        #print(mined_block)
-        """ broadcast_block(mined_block)
-        if validate_block(nodes[1]):
-            mined_block.index = len(nodes[1].validateBlocks)
-            nodes[1].validateBlocks.append(mined_block)
-        nodes[1].jcurrentBlock = Block(time.time(),[],mined_block.current_hash)
-
-        print ('LENnode1:',len(nodes[1].validateBlocks))
-        print ('node1:',nodes[1].validateBlocks[0].current_hash)
-        print ('node1:',nodes[1].validateBlocks[1].current_hash) """
-
-
-
-
-
-def best_mined_block(nodes):
-    order = {}
-    mined = {}
-    for node in nodes:
-        order = order | {node.id : node.finTime}
-        mined = mined | {node.id : node.mined_block}
-        
-    orderSorted = dict(sorted(order.items(), key=lambda item:item[1], reverse=False))
-    idMINER = list(orderSorted.keys())[0]
-    leBlockSuperBienMine = list(mined.items())[idMINER]
-    print(orderSorted)
-    print(mined)
-    print(leBlockSuperBienMine)
-
-# node0()
-# node1()
-# best_mined_block(nodes)
-
-""" def node0():
-    print(f"ICI LE TEMPS 0: {time.time()}")
-    if len(nodes[0].jcurrentBlock.transactions) == 2:
-        mined_block = mine_block(nodes[0],2)
-        #print(mined_block)
-        broadcast_block(mined_block)
-        if validate_block(nodes[0]):
-            mined_block.index = len(nodes[0].validateBlocks)
-            nodes[0].validateBlocks.append(mined_block)
-        nodes[0].jcurrentBlock = Block(time.time(),[],mined_block.current_hash)
-
-        print ('LENnode0:',len(nodes[0].validateBlocks))
-        print ('node0:',nodes[0].validateBlocks[0].current_hash)
-        print ('node0:',nodes[0].validateBlocks[1].current_hash)
-
-def node1():
-    print(f"ICI LE TEMPS 1: {time.time()}")
-    if len(nodes[1].jcurrentBlock.transactions) == 2:
-        mined_block = mine_block(nodes[1],2)
-        #print(mined_block)
-        broadcast_block(mined_block)
-        if validate_block(nodes[1]):
-            mined_block.index = len(nodes[1].validateBlocks)
-            nodes[1].validateBlocks.append(mined_block)
-        nodes[1].jcurrentBlock = Block(time.time(),[],mined_block.current_hash)
-
-        print ('LENnode1:',len(nodes[1].validateBlocks))
-        print ('node1:',nodes[1].validateBlocks[0].current_hash)
-        print ('node1:',nodes[1].validateBlocks[1].current_hash) """
-
-    
-# print ('node1:',len(nodes[1].validateBlocks))
-
-# print("------------------------------")
-# print(vars(nodes[1].validateBlocks[0]))
-# print(vars(nodes[1].validateBlocks[1]))
-# print(vars(nodes[1].validateBlocks[2]))
 #---------------------------------------------------------------------------------------------------------------
-app= Flask(__name__)
-
-@app.route('/noobcash', methods=['GET', 'POST'])
-def html():
-    #createNode(nodes)
-    return render_template("user.html")
-
-@app.route('/create_node', methods=['GET', 'POST'])
-def creation():
-    createNode(nodes)
-    print("yesir")
-    return "OK"
-
-# @app.route('/f1', methods=['GET', 'POST'])
-# def create_node():
-#     createNode(nodes)
-#     return render_template("user.html")
-
-# @app.route('/f2', methods=['GET', 'POST'])
-# def create_node():
-#     createNode(nodes)
-#     return render_template("user.html")
-
-if __name__ == '__main__':
-    app.run(debug=True, port=9103)

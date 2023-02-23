@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NoobCash</title>
+
+</head>
+<body>
+    <p>Hello</p>
+
+
+    <button onclick="appeler_fonction('createNode')">Create a new Node</button>
+    <button onclick="appeler_fonction('transaction')">Submit the transaction</button>
+
+    <script>
+        function appeler_fonction(nom_fonction) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/appelle-fonction');
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function() {
+               if (xhr.status === 200) {
+                    if(nom_fonction==="createNode"){alert(xhr.responseText);}               
+                   //document.getElementById("resultat").innerHTML = xhr.responseText;
+                    void(0)
+               }
+               else {
+                    alert('Une erreur est survenue : ' + xhr.status);
+                }
+            };
+            xhr.send(JSON.stringify({ 'nom_fonction': nom_fonction }));
+        }
+    </script>
+    <!-- <p id="resultat"></p> -->
+
+</body>
+</html>
