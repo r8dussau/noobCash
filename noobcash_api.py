@@ -434,30 +434,3 @@ def best_mined_block(nodes):
     print(orderSorted)
     print(mined)
     print(leBlockSuperBienMine)
-
-#---------------------------------------------------------------------------------------------------------------
-# app= Flask(__name__)
-
-# @app.route('/noobcash', methods=['GET', 'POST'])
-# def html():
-#     #createNode(nodes)
-#     return render_template("user.html")
-
-# @app.route('/create_node', methods=['GET', 'POST'])
-# def creation():
-#     createNode(nodes)
-#     print("yesir")
-#     return "OK"
-
-# # @app.route('/f1', methods=['GET', 'POST'])
-# # def create_node():
-# #     createNode(nodes)
-# #     return render_template("user.html")
-
-# # @app.route('/f2', methods=['GET', 'POST'])
-# # def create_node():
-# #     createNode(nodes)
-# #     return render_template("user.html")
-
-# if __name__ == '__main__':
-#     app.run(debug=True, port=9103)
