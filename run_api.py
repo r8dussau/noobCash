@@ -1,5 +1,5 @@
 from flask import Flask, request, send_file, render_template
-from noobcash_api import createNode, transaction, nodes
+from noobcash_api import nodes, wallet_balance, transaction
 
 #---------------------------------------------------------------------------------------------------------------
 #Aciver l'environnement virtuel:
@@ -28,11 +28,26 @@ def view():
 
 @app.route('/balance')
 def balance():
-    return render_template('balance.html')
+    my_list = []
+    for node in nodes:
+        my_list.append(node.id)
+    return render_template('balance.html', my_list=my_list)
 
 @app.route('/help')
 def help():
     return render_template('help.html')
+
+@app.route('/call-function', methods=['POST'])
+def call_function():
+    function_name = request.json['function_name']
+
+    if function_name == 'import_balance':
+        my_id = request.json['option']
+        result = wallet_balance(nodes[int(my_id)].wallet)
+        return str(result)
+
+    return "Nothing is called"
+
 
 """ 
 @app.route('/noobcash')

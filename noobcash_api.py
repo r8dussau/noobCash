@@ -107,12 +107,12 @@ def create_wallet(nodeID, size):
     key = RSA.generate(size)
     #Private Key writen in private_nodeNumber.pem
     private_key = key.export_key()
-    file_out = open("private_"+str(id)+".pem", "wb")
+    file_out = open("key_folder/private_"+str(id)+".pem", "wb")
     file_out.write(private_key)
     file_out.close()
     #Public Key writen in public_nodeNumber.pem
     public_key = key.publickey().export_key()
-    file_out = open("public_"+str(id)+".pem", "wb")
+    file_out = open("key_folder/public_"+str(id)+".pem", "wb")
     file_out.write(public_key)
     file_out.close()
 
