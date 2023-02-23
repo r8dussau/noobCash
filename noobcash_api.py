@@ -24,7 +24,7 @@ import time
 #Node class
 class Node:
     id = 0
-    def __init__(self):
+    def __init__(self,initialNodeNumber):
         self.id = Node.id
         Node.id += 1
         self.ipAdress = f"{randint(0,200)}.{randint(0,200)}.{randint(0,200)}.{randint(0,10)}"
@@ -34,20 +34,10 @@ class Node:
         self.iteration = 0
         self.UTXOs = []
 
-        #---------------------------------------------
-        #RAPH
-        # self.finTime = 0
-        # self.minedBlock = 0
-
-        #---------------------------------------------
-
-        
         #Create genesis block
         if self.id == 0:
-            #genesis_utxo = Transaction_Output("genesis",self.wallet.public_key,100)
-            #self.UTXOs.append(genesis_utxo)
-            genesisTransaction = create_transaction("0",self.wallet.public_key,100,True)
-            output0 = Transaction_Output("genesis",self.wallet.public_key,100)
+            genesisTransaction = create_transaction("0",self.wallet.public_key,100*initialNodeNumber,True)
+            output0 = Transaction_Output("genesis",self.wallet.public_key,100*initialNodeNumber)
             self.UTXOs.append(output0)
             genesisBlock = (Block(time.time(),genesisTransaction,1))
 
@@ -316,15 +306,6 @@ def view_transactions():
     
 
 #---------------------------------------------------------------------------------------------------------------
-#Test ZOne
-#Listes des nodes:
-nodes = list()
-
-def createNode(nodes):
-    nodes.append(Node())
-blockchain = []
-
-
 def transaction(nodes, nodeSender, nodeRecever, amount, capacity):
 
     test_transaction = create_transaction(nodeSender.wallet.public_key, nodeRecever.wallet.public_key, amount)
@@ -371,24 +352,33 @@ def transaction(nodes, nodeSender, nodeRecever, amount, capacity):
         timeList = {}
         timeListSorted = {}
         mined = {}
+#---------------------------------------------------------------------------------------------------------------
+#Test ZOne
+#Listes des nodes:
+nodes = list()
+blockchain = []
+initialNodeNumber = 5
+def Init_Nodes(nodes,initialNodeNumber):
+    for i in range(initialNodeNumber):
+        nodes.append(Node(initialNodeNumber))
 
-createNode(nodes)
-createNode(nodes)
+
+
+Init_Nodes(nodes,5)
 print ('Nombre de nodes:',len(nodes))
-transaction(nodes, nodes[0], nodes[1], 20, 2)
-# transaction(nodes, nodes[0], nodes[1], 10, 2)
-transaction(nodes, nodes[1], nodes[0], 10, 2)
-transaction(nodes, nodes[1], nodes[0], 10, 2)
-transaction(nodes, nodes[0], nodes[1], 20, 2)
-transaction(nodes, nodes[1], nodes[0], 20, 2)
-
+for i in range (initialNodeNumber-1):
+    transaction(nodes, nodes[0], nodes[i+1], 100, 2)
 
 b0 = wallet_balance(nodes[0].wallet)
 print('b0:',b0)
 b1 = wallet_balance(nodes[1].wallet)
 print('b1:',b1)
-for utxo in nodes[1].UTXOs:
-    print(utxo.amount)
+b2 = wallet_balance(nodes[2].wallet)
+print('b2:',b2)
+b3 = wallet_balance(nodes[3].wallet)
+print('b3:',b3)
+b4 = wallet_balance(nodes[4].wallet)
+print('b4:',b4)
 
 #view_transactions()
 
