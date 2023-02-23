@@ -55,7 +55,7 @@ class Node:
 
             genesisBlock.current_hash="0"*64
             self.validateBlocks.append(genesisBlock)
-            #ajouter aussi ce bloc à la blockchain
+            blockchain.append(genesisBlock)
         else:
             self.validateBlocks.append(nodes[0].validateBlocks[0])
         
@@ -143,17 +143,15 @@ def create_transaction(sender_publicKey, receiver_publicKey, amount, isGenesis=F
 
         #Inputs:
         transaction_inputs=[]
-        #Cas classique:
         for node in nodes:
             if node.wallet.public_key == sender_publicKey:
                 UTXOs = node.UTXOs
         for utxo in UTXOs:
-            if (utxo.recipient_publicKey == sender_publicKey):
+            if (utxo.recipient_publicKey == sender_publicKey) and balance<amount:
                 input = Transaction_Input(utxo.id)
                 balance += utxo.amount
                 transaction_inputs.append(input)
         #Outputs
-        #Cas classique:
         transaction_outputs = []
         send_output = Transaction_Output("test", receiver_publicKey, amount)
         receive_output = Transaction_Output("test", sender_publicKey, balance-amount)
@@ -172,8 +170,11 @@ def create_transaction(sender_publicKey, receiver_publicKey, amount, isGenesis=F
         #Check balance
         if balance-amount >= 0:
             newTransaction = Transaction(transaction_id, sender_publicKey, receiver_publicKey, amount, transaction_inputs, transaction_outputs)
+            print("Enough Money for the transaction")
             return newTransaction
+            
         else:
+            print("Not enough money for the transaction")
             return None
 
 
@@ -184,6 +185,7 @@ def sign_transaction(transaction, node):
     h = SHA256.new(message)
     signature = pss.new(key).sign(h)
     transaction.signature = signature
+    print("Transaction signed")
 
 
 def verify_signature(transaction, node):
@@ -194,30 +196,61 @@ def verify_signature(transaction, node):
     verifier = pss.new(key)
     try:
         verifier.verify(h, transaction.signature)
-        # print ("The signature is authentic.")
+        print ("The signature is authentic.")
         return True
     except (ValueError, TypeError):
-        # print ("The signature is not authentic.")
+        print ("The signature is not authentic.")
         return False
 
-def validate_transaction(transaction, node):
-    # Check if signature is good
-    if verify_signature(transaction, node):
-        # print("La signature est bien vérifiée")
-        for input in transaction.transaction_inputs:
-            for utxo in node.UTXOs:
-                if input.previous_outputID != utxo.id:
-                    # print("Pas valide")
-                    return False
-                else:
-                    node.UTXOs.remove(utxo)
-                    node.UTXOs.append(transaction.transaction_outputs[1])
-                    # print('Valide')
-                    return True
+# def validate_transaction(transaction, node):
+#     # Check if signature is good
+#     if verify_signature(transaction, node):
+#         for input in transaction.transaction_inputs:
+#             for utxo in node.UTXOs:
+#                 if input.previous_outputID != utxo.id:
+#                     print("Some money don't come from UTXOs")
+#                     return False
+#                 else:
+#                     #Sender
+#                     node.UTXOs.remove(utxo)
+#                     node.UTXOs.append(transaction.transaction_outputs[0])#donne
+#                     node.UTXOs.append(transaction.transaction_outputs[1])#reprend
+#                     for n in nodes:
+#                         if n.wallet.public_key==transaction.receiver_publicKey:
+#                             n.UTXOs.append(transaction.transaction_outputs[0])
+#                     print('Transaction is fully validated')
+#                     return True
+
+def validate_transaction(transaction,node):
+    isUTXO = False
+    for input in transaction.transaction_inputs:
+        for utxo in node.UTXOs:
+            if input.previous_outputID == utxo.id:
+                isUTXO = True
+        
+                node.UTXOs.remove(utxo)
+                # transaction.transaction_inputs.pop()
+                # print('removed!')
+                # print('leninputs apres remove:',len(transaction.transaction_inputs))
+                #checker si on supprime bien TOUT les UTXOs!
+    # print('tu vas recup',transaction.transaction_outputs[1].amount)
+    if isUTXO:
+        node.UTXOs.append(transaction.transaction_outputs[1])#reprend
+        for node in nodes:
+            if node.wallet.public_key == transaction.receiver_publicKey:
+                node.UTXOs.append(transaction.transaction_outputs[0])
+                print('Targeted wallet is available')
+                #return True
+            # else:
+            #     #One input is not from unspent money!
+            #     print("You're trying to use money wich is not from you're unspent money!")
+            #     return False
+        
 
 def broadcast_transaction(transaction):
     for node in nodes:
         node.jcurrentBlock.transactions.append(transaction)
+    print("Transaction broadcasted to all nodes")
             
 
 def wallet_balance(wallet):  
@@ -232,16 +265,9 @@ def wallet_balance(wallet):
 
 def mine_block(node, difficulty):
 
-    #---------------------------------------------
-    #RAPH
     node.finTime = 0
     finTime = 0
     debutTime = time.time()
-
-    #---------------------------------------------
-
-
-
     nonce = 0
     #proof of work
     while node.jcurrentBlock.current_hash[0:difficulty] != '0'*difficulty:
@@ -252,17 +278,11 @@ def mine_block(node, difficulty):
     mined_block = node.jcurrentBlock
 
     #---------------------------------------------
-    #RAPH
-    # print("\n\n\n")
-    # node.finTime = int(time.time()*1000000)-int(debutTime*1000000)
-    # print(node.finTime)
-    # node.minedBlock = mined_block
-    #finTime = node.finTime
     finTime = int(time.time()*1000000)-int(debutTime*1000000)
-    print("\n\n\n")
-    print(time.time())
-    print(debutTime)
-    print(finTime)
+    # print("\n\n\n")
+    # print(time.time())
+    # print(debutTime)
+    # print(finTime)
     #---------------------------------------------
 
     return mined_block, finTime
@@ -270,59 +290,42 @@ def mine_block(node, difficulty):
 def broadcast_block(block):
     for node in nodes:
         node.jcurrentBlock = block
+    print("First mined block is broadcasted to all other nodes")
 
 def validate_block(node):
     newBlock = node.jcurrentBlock
     prevBlock = node.validateBlocks[-1]
     data = f"{newBlock.timestamp}{newBlock.transactions}{newBlock.nonce}{newBlock.previous_hash}".encode()
     hash_result = hashlib.sha256(data).hexdigest()
-    if hash_result != vars(newBlock)['current_hash']:
+    # if hash_result != vars(newBlock)['current_hash']:
+    if hash_result != newBlock.current_hash:
+        print("Error in block validation")
         return False
 
-    # print('---------------------------------')
-    # print('new:',vars(newBlock)['previous_hash'])
-    # print('pre:',vars(prevBlock)['current_hash'])
-    # print('---------------------------------')
-
-    if vars(newBlock)['previous_hash'] != vars(prevBlock)['current_hash']:
+    # if vars(newBlock)['previous_hash'] != vars(prevBlock)['current_hash']:
+    if newBlock.previous_hash != prevBlock.current_hash:
+        print("Error in block validation")
         return False
-    
-    # blockchain.list.append(newBlock)
 
-    return True
+    else:
+        return True
     
-# def validate_chain(node):
-#     if validate_block(node):
-#         return True
-#     else:
-#         return False
+def view_transactions():
+    print("------------------VIEW TRANSACTIONS--------------------")
+    for i in range (len(blockchain[-1].transactions)):
+        print(blockchain[-1].transactions[i].amount)
+        print(blockchain[-1].transactions[i].transaction_id)
+    
 
 #---------------------------------------------------------------------------------------------------------------
 #Test ZOne
 #Listes des nodes:
 nodes = list()
+
 def createNode(nodes):
     nodes.append(Node())
-    for node in nodes:
-        print(node.id)
 blockchain = []
 
-""" test_transaction = create_transaction(nodes[0].wallet.public_key, nodes[1].wallet.public_key, 10)
-if test_transaction != None:
-    sign_transaction(test_transaction,nodes[0])
-    verify_signature(test_transaction,nodes[0])
-    isValid = validate_transaction(test_transaction,nodes[0])
-    broadcast_transaction(test_transaction)
-
-test_transaction1 = create_transaction(nodes[0].wallet.public_key, nodes[1].wallet.public_key, 10)
-if test_transaction1 != None:
-    sign_transaction(test_transaction1,nodes[0])
-    verify_signature(test_transaction1,nodes[0])
-    isValid = validate_transaction(test_transaction1,nodes[0])
-    broadcast_transaction(test_transaction1) """
-
-# createNode(nodes)
-# createNode(nodes)
 
 def transaction(nodes, nodeSender, nodeRecever, amount, capacity):
 
@@ -351,80 +354,71 @@ def transaction(nodes, nodeSender, nodeRecever, amount, capacity):
         for node in nodes:
             if validate_block(node):
                     mined_block.index = len(node.validateBlocks)
+                    print(node.id," validate block",mined_block.index)
                     node.validateBlocks.append(mined_block)
+                    # print('girafe',vars(mined_block.transactions))
             node.jcurrentBlock = Block(time.time(),[],mined_block.current_hash)
+        
+        selectedNode = None
+        previousNode = None
+        for node in nodes:
+            if node.id == 0:
+                selectedNode = node
+                previousNode = node
+            else:
+                if len(node.validateBlocks)>len(previousNode.validateBlocks):
+                    selectedNode = node
+        blockchain.append(selectedNode.validateBlocks[-1])
         
         timeList = {}
         timeListSorted = {}
         mined = {}
 
-# transaction(nodes, nodes[0], nodes[1], 10, 3)
-# transaction(nodes, nodes[0], nodes[1], 10, 3)
-# transaction(nodes, nodes[0], nodes[1], 10, 3)
+createNode(nodes)
+createNode(nodes)
+print ('Nombre de nodes:',len(nodes))
+transaction(nodes, nodes[0], nodes[1], 20, 2)
+# transaction(nodes, nodes[0], nodes[1], 10, 2)
+transaction(nodes, nodes[1], nodes[0], 10, 2)
+transaction(nodes, nodes[1], nodes[0], 10, 2)
+transaction(nodes, nodes[0], nodes[1], 20, 2)
+transaction(nodes, nodes[1], nodes[0], 20, 2)
 
 
-def minage(nodes):
-    timeList = {}
-    mined = {}
-    for node in nodes: 
-        if len(node.jcurrentBlock.transactions) == 2:
-            mined_block, finTime = mine_block(node,3)
-            timeList = timeList | {node.id : finTime}
-            mined = mined | {node.id : mined_block}
+b0 = wallet_balance(nodes[0].wallet)
+print('b0:',b0)
+b1 = wallet_balance(nodes[1].wallet)
+print('b1:',b1)
+for utxo in nodes[1].UTXOs:
+    print(utxo.amount)
+
+#view_transactions()
+
+# def minage(nodes):
+#     timeList = {}
+#     mined = {}
+#     for node in nodes: 
+#         if len(node.jcurrentBlock.transactions) == 2:
+#             mined_block, finTime = mine_block(node,3)
+#             timeList = timeList | {node.id : finTime}
+#             mined = mined | {node.id : mined_block}
         
-    timeListSorted = dict(sorted(timeList.items(), key=lambda item:item[1], reverse=False))
-    idGoodMinedBlock = list(timeListSorted.keys())[0]
-    goodMinedBlock = list(mined.items())[idGoodMinedBlock][1]
+#     timeListSorted = dict(sorted(timeList.items(), key=lambda item:item[1], reverse=False))
+#     idGoodMinedBlock = list(timeListSorted.keys())[0]
+#     goodMinedBlock = list(mined.items())[idGoodMinedBlock][1]
 
-    broadcast_block(goodMinedBlock)
+#     broadcast_block(goodMinedBlock)
 
-    for node in nodes:
-        if validate_block(node):
-                mined_block.index = len(node.validateBlocks)
-                node.validateBlocks.append(mined_block)
-        node.jcurrentBlock = Block(time.time(),[],mined_block.current_hash)
+#     for node in nodes:
+#         if validate_block(node):
+#                 mined_block.index = len(node.validateBlocks)
+#                 node.validateBlocks.append(mined_block)
+#         node.jcurrentBlock = Block(time.time(),[],mined_block.current_hash)
 
-    print(timeList)
-    print(timeListSorted)
-    print(mined)
-    print(goodMinedBlock)
-
-
-
-
-
-def node0():
-    print(f"ICI LE TEMPS 0: {time.time()}")
-    if len(nodes[0].jcurrentBlock.transactions) == 2:
-        mined_block = mine_block(nodes[0],2)
-        #print(mined_block)
-        """ broadcast_block(mined_block)
-        if validate_block(nodes[0]):
-            mined_block.index = len(nodes[0].validateBlocks)
-            nodes[0].validateBlocks.append(mined_block)
-        nodes[0].jcurrentBlock = Block(time.time(),[],mined_block.current_hash)
-
-        print ('LENnode0:',len(nodes[0].validateBlocks))
-        print ('node0:',nodes[0].validateBlocks[0].current_hash)
-        print ('node0:',nodes[0].validateBlocks[1].current_hash) """
-
-def node1():
-    print(f"ICI LE TEMPS 1: {time.time()}")
-    if len(nodes[1].jcurrentBlock.transactions) == 2:
-        mined_block = mine_block(nodes[1],2)
-        #print(mined_block)
-        """ broadcast_block(mined_block)
-        if validate_block(nodes[1]):
-            mined_block.index = len(nodes[1].validateBlocks)
-            nodes[1].validateBlocks.append(mined_block)
-        nodes[1].jcurrentBlock = Block(time.time(),[],mined_block.current_hash)
-
-        print ('LENnode1:',len(nodes[1].validateBlocks))
-        print ('node1:',nodes[1].validateBlocks[0].current_hash)
-        print ('node1:',nodes[1].validateBlocks[1].current_hash) """
-
-
-
+#     print(timeList)
+#     print(timeListSorted)
+#     print(mined)
+#     print(goodMinedBlock)
 
 
 def best_mined_block(nodes):
@@ -441,70 +435,29 @@ def best_mined_block(nodes):
     print(mined)
     print(leBlockSuperBienMine)
 
-# node0()
-# node1()
-# best_mined_block(nodes)
-
-""" def node0():
-    print(f"ICI LE TEMPS 0: {time.time()}")
-    if len(nodes[0].jcurrentBlock.transactions) == 2:
-        mined_block = mine_block(nodes[0],2)
-        #print(mined_block)
-        broadcast_block(mined_block)
-        if validate_block(nodes[0]):
-            mined_block.index = len(nodes[0].validateBlocks)
-            nodes[0].validateBlocks.append(mined_block)
-        nodes[0].jcurrentBlock = Block(time.time(),[],mined_block.current_hash)
-
-        print ('LENnode0:',len(nodes[0].validateBlocks))
-        print ('node0:',nodes[0].validateBlocks[0].current_hash)
-        print ('node0:',nodes[0].validateBlocks[1].current_hash)
-
-def node1():
-    print(f"ICI LE TEMPS 1: {time.time()}")
-    if len(nodes[1].jcurrentBlock.transactions) == 2:
-        mined_block = mine_block(nodes[1],2)
-        #print(mined_block)
-        broadcast_block(mined_block)
-        if validate_block(nodes[1]):
-            mined_block.index = len(nodes[1].validateBlocks)
-            nodes[1].validateBlocks.append(mined_block)
-        nodes[1].jcurrentBlock = Block(time.time(),[],mined_block.current_hash)
-
-        print ('LENnode1:',len(nodes[1].validateBlocks))
-        print ('node1:',nodes[1].validateBlocks[0].current_hash)
-        print ('node1:',nodes[1].validateBlocks[1].current_hash) """
-
-    
-# print ('node1:',len(nodes[1].validateBlocks))
-
-# print("------------------------------")
-# print(vars(nodes[1].validateBlocks[0]))
-# print(vars(nodes[1].validateBlocks[1]))
-# print(vars(nodes[1].validateBlocks[2]))
 #---------------------------------------------------------------------------------------------------------------
-app= Flask(__name__)
+# app= Flask(__name__)
 
-@app.route('/noobcash', methods=['GET', 'POST'])
-def html():
-    #createNode(nodes)
-    return render_template("user.html")
-
-@app.route('/create_node', methods=['GET', 'POST'])
-def creation():
-    createNode(nodes)
-    print("yesir")
-    return "OK"
-
-# @app.route('/f1', methods=['GET', 'POST'])
-# def create_node():
-#     createNode(nodes)
+# @app.route('/noobcash', methods=['GET', 'POST'])
+# def html():
+#     #createNode(nodes)
 #     return render_template("user.html")
 
-# @app.route('/f2', methods=['GET', 'POST'])
-# def create_node():
+# @app.route('/create_node', methods=['GET', 'POST'])
+# def creation():
 #     createNode(nodes)
-#     return render_template("user.html")
+#     print("yesir")
+#     return "OK"
 
-if __name__ == '__main__':
-    app.run(debug=True, port=9103)
+# # @app.route('/f1', methods=['GET', 'POST'])
+# # def create_node():
+# #     createNode(nodes)
+# #     return render_template("user.html")
+
+# # @app.route('/f2', methods=['GET', 'POST'])
+# # def create_node():
+# #     createNode(nodes)
+# #     return render_template("user.html")
+
+# if __name__ == '__main__':
+#     app.run(debug=True, port=9103)
