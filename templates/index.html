@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NoobCash</title>
+</head>
+<body>
+    <h1>NoobCash</h1>
+    <p>Images</p>
+    <button id="bt_transaction">New transaction</button>
+    <button id="bt_view">View last transactions</button>
+    <button id="bt_balance">Show balance</button>
+    <button id="bt_help">Help</button>
+
+    <br>
+    <iframe id="heart-frame" src="" frameborder="1" style="display: none;"></iframe>
+    
+    <p id="id_empty"></p>
+
+    <h1>Bas de page</h1>
+
+    
+    <script>
+
+      function checkEmpty(){
+        if(document.getElementById('heart-frame').src ==="http://127.0.0.1:9103/noobcash"){
+          document.getElementById('id_empty').innerHTML = 'Aucun contenu disponible';
+          document.getElementById('heart-frame').style.display = "none";
+        } else{
+          document.getElementById('id_empty').innerHTML = '';
+          document.getElementById('heart-frame').style.display = "block";
+        }
+      }
+
+      checkEmpty();
+
+      document.getElementById('bt_transaction').addEventListener('click', function() {
+        document.getElementById('heart-frame').src = "/transaction";
+        checkEmpty();
+      });
+      document.getElementById('bt_view').addEventListener('click', function() {
+        document.getElementById('heart-frame').src = "/view";
+        checkEmpty();
+      });
+      document.getElementById('bt_balance').addEventListener('click', function() {
+        document.getElementById('heart-frame').src = "/balance";
+        checkEmpty();
+      });
+      document.getElementById('bt_help').addEventListener('click', function() {
+        document.getElementById('heart-frame').src = "/help";
+        checkEmpty();
+      });
+
+      
+  </script>
+
+</body>
+</html>
