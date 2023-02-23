@@ -1,5 +1,19 @@
-<h1>Hello!!!</h1>
-
-<p>
-    How are you ?
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoobCash</title>
+</head>
+<body>
+    <p>Hello</p>
+    <button onclick="create_node()">Create a new node</button>
+    <script>
+        function create_node(event){
+            event.preventDefault();
+            fetch('/create_node')
+        }
+    </script>
+</body>
+</html>

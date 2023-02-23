@@ -303,6 +303,8 @@ def validate_block(node):
 nodes = list()
 def createNode(nodes):
     nodes.append(Node())
+    for node in nodes:
+        print(node.id)
 blockchain = []
 
 """ test_transaction = create_transaction(nodes[0].wallet.public_key, nodes[1].wallet.public_key, 10)
@@ -319,8 +321,8 @@ if test_transaction1 != None:
     isValid = validate_transaction(test_transaction1,nodes[0])
     broadcast_transaction(test_transaction1) """
 
-createNode(nodes)
-createNode(nodes)
+# createNode(nodes)
+# createNode(nodes)
 
 def transaction(nodes, nodeSender, nodeRecever, amount, capacity):
 
@@ -356,9 +358,9 @@ def transaction(nodes, nodeSender, nodeRecever, amount, capacity):
         timeListSorted = {}
         mined = {}
 
-transaction(nodes, nodes[0], nodes[1], 10, 3)
-transaction(nodes, nodes[0], nodes[1], 10, 3)
-transaction(nodes, nodes[0], nodes[1], 10, 3)
+# transaction(nodes, nodes[0], nodes[1], 10, 3)
+# transaction(nodes, nodes[0], nodes[1], 10, 3)
+# transaction(nodes, nodes[0], nodes[1], 10, 3)
 
 
 def minage(nodes):
@@ -484,10 +486,25 @@ def node1():
 app= Flask(__name__)
 
 @app.route('/noobcash', methods=['GET', 'POST'])
-def user():
+def html():
+    #createNode(nodes)
     return render_template("user.html")
 
-# if __name__ == '__main__':
-#     app.run(debug=True, port=9103)
-# if __name__ == '__main__':
-#     app.run(debug=True, port=9103)
+@app.route('/create_node', methods=['GET', 'POST'])
+def creation():
+    createNode(nodes)
+    print("yesir")
+    return "OK"
+
+# @app.route('/f1', methods=['GET', 'POST'])
+# def create_node():
+#     createNode(nodes)
+#     return render_template("user.html")
+
+# @app.route('/f2', methods=['GET', 'POST'])
+# def create_node():
+#     createNode(nodes)
+#     return render_template("user.html")
+
+if __name__ == '__main__':
+    app.run(debug=True, port=9103)
