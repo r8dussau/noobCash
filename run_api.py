@@ -53,7 +53,7 @@ def call_function():
         id_sender = request.json['option1']
         id_reciever = request.json['option2']
         amount = request.json['amount']
-        make_transaction(nodes,nodes[int(id_sender)], nodes[int(id_reciever)], int(amount), 4)
+        make_transaction(nodes,nodes[int(id_sender)], nodes[int(id_reciever)], int(amount), capacity)
         return amount
     
     if function_name == 'view_transaction':
@@ -61,28 +61,6 @@ def call_function():
         return my_dict
 
     return "Nothing is called"
-
-
-""" 
-@app.route('/noobcash')
-def index():
-    return render_template('index.html')
-    #return send_file('index.html')
-
-@app.route('/appelle-fonction', methods=['POST'])
-def call_function():
-    nom_fonction = request.json['nom_fonction']
-
-    if nom_fonction == 'createNode':
-        createNode(nodes)
-        return f"You just created the node with the id {nodes[-1].id}"
-
-    if nom_fonction == 'transaction':
-        transaction(nodes, nodes[0], nodes[1], 1, 2)
-        return "The 2nd function is called"
-
-    return "Nothing is called"
- """
 
 if __name__ == '__main__':
     app.run(debug=True, port=9103)

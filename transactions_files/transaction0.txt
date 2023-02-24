@@ -1,0 +1,22 @@
+<transactions>
+    <transaction>
+        <recipient_node_id>1</recipient_node_id>
+        <amount>10</amount>
+    </transaction>
+    <transaction>
+        <recipient_node_id>1</recipient_node_id>
+        <amount>10</amount>
+    </transaction>
+    <transaction>
+        <recipient_node_id>1</recipient_node_id>
+        <amount>10</amount>
+    </transaction>
+    <transaction>
+        <recipient_node_id>1</recipient_node_id>
+        <amount>10</amount>
+    </transaction>
+    <transaction>
+        <recipient_node_id>1</recipient_node_id>
+        <amount>10</amount>
+    </transaction>
+</transaction>
