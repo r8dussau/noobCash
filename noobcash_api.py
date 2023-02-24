@@ -228,11 +228,11 @@ def validate_transaction(transaction,node):
             if node.wallet.public_key == transaction.receiver_publicKey:
                 node.UTXOs.append(transaction.transaction_outputs[0])
                 print('Targeted wallet is available')
-                #return True
-            # else:
-            #     #One input is not from unspent money!
-            #     print("You're trying to use money wich is not from you're unspent money!")
-            #     return False
+        return True
+    else:
+        #One input is not from unspent money!
+        print("You're trying to use money wich is not from you're unspent money!")
+        return False
         
 
 def broadcast_transaction(transaction):
@@ -379,6 +379,7 @@ b3 = wallet_balance(nodes[3].wallet)
 print('b3:',b3)
 b4 = wallet_balance(nodes[4].wallet)
 print('b4:',b4)
+print(len(blockchain))
 
 #view_transactions()
 
