@@ -33,8 +33,7 @@ pip install pycryptodome
 
 ## Usage
 
-Once every all configurations are done and you're SQL database is running, you can run the *intelliq_api.py* 
-If everything works fine, your terminal should return this:
+Once all the library are well installed, you can run the *run_api.py* If everything works fine, your terminal should return this:
 
 ```bash
  * Serving Flask app 'run_api'
