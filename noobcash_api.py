@@ -10,6 +10,7 @@ from random import randint
 
 import hashlib
 import time
+import re
 
 #---------------------------------------------------------------------------------------------------------------
 #Aciver l'environnement virtuel:
@@ -293,8 +294,6 @@ def validate_block(node):
         return True
     
 def view_transactions():
-    print("------------------VIEW TRANSACTIONS--------------------")
-    
     print(vars(blockchain[0].transactions))
     
     for i in range (len(blockchain[-1].transactions)):
@@ -351,12 +350,23 @@ def make_transaction(nodes, nodeSender, nodeRecever, amount, capacity):
         timeListSorted = {}
         mined = {}
 
+def readTransactionTxt(txtPath):
+    with open(txtPath, "r") as f:
+        datas = f.read()
+    sender = re.search(r'\d{1,2}', txtPath).group()
+    balise_receiver = "<recipient_node_id>(.+?)</recipient_node_id>"
+    balise_amount = "<amount>(.+?)</amount>"
+    receivers = re.findall(balise_receiver, datas)
+    amounts = re.findall(balise_amount, datas)
+    return sender, receivers, amounts
+
 #---------------------------------------------------------------------------------------------------------------
 #Test ZOne
 #Listes des nodes:
 nodes = list()
 blockchain = []
 initialNodeNumber = 5
+capacity = 3
 def Init_Nodes(nodes,initialNodeNumber):
     for i in range(initialNodeNumber):
         nodes.append(Node(initialNodeNumber))
@@ -366,30 +376,41 @@ def Init_Nodes(nodes,initialNodeNumber):
 Init_Nodes(nodes,5)
 print ('Nombre de nodes:',len(nodes))
 for i in range (initialNodeNumber-1):
-    make_transaction(nodes, nodes[0], nodes[i+1], 100, 2)
+    make_transaction(nodes, nodes[0], nodes[i+1], 100, capacity)
 
 
-make_transaction(nodes, nodes[0], nodes[1], 10, 2)
-make_transaction(nodes, nodes[0], nodes[1], 10, 2)
-make_transaction(nodes, nodes[0], nodes[1], 10, 2)
+# make_transaction(nodes, nodes[0], nodes[1], 10, 2)
+# make_transaction(nodes, nodes[0], nodes[1], 10, 2)
+# make_transaction(nodes, nodes[0], nodes[1], 10, 2)
 
-make_transaction(nodes, nodes[0], nodes[1], 10, 2)
+# make_transaction(nodes, nodes[0], nodes[1], 10, 2)
 
-make_transaction(nodes, nodes[0], nodes[1], 10, 2)
+# make_transaction(nodes, nodes[0], nodes[1], 10, 2)
+
+# b0 = wallet_balance(nodes[0].wallet)
+# print('b0:',b0)
+# b1 = wallet_balance(nodes[1].wallet)
+# print('b1:',b1)
+# b2 = wallet_balance(nodes[2].wallet)
+# print('b2:',b2)
+# b3 = wallet_balance(nodes[3].wallet)
+# print('b3:',b3)
+# b4 = wallet_balance(nodes[4].wallet)
+# print('b4:',b4)
+# print(len(blockchain))
+
+sender, receivers, amounts =readTransactionTxt("transactions_files/transaction0.txt")
+
+# for i in range (len(receivers)):
+#     make_transaction(nodes,nodes[int(sender)],nodes[int(receivers[i])],int(amounts[i]),capacity)
 
 b0 = wallet_balance(nodes[0].wallet)
 print('b0:',b0)
 b1 = wallet_balance(nodes[1].wallet)
 print('b1:',b1)
-b2 = wallet_balance(nodes[2].wallet)
-print('b2:',b2)
-b3 = wallet_balance(nodes[3].wallet)
-print('b3:',b3)
-b4 = wallet_balance(nodes[4].wallet)
-print('b4:',b4)
+
+make_transaction(nodes, nodes[0], nodes[1], 10, 2)
 print(len(blockchain))
-
-
-print(blockchain[0].transactions)
+# print(blockchain[0].transactions)
 
 #view_transactions()
