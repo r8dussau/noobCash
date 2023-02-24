@@ -121,7 +121,7 @@ def create_wallet(nodeID, size):
 
 def create_transaction(sender_publicKey, receiver_publicKey, amount, isGenesis=False):
     if isGenesis:
-        print('Création de la genesis transaction')
+        #print('Création de la genesis transaction')
         newTransaction =  Transaction("genesis", "0", receiver_publicKey, amount, [], [])
         return newTransaction
     else:
@@ -159,11 +159,11 @@ def create_transaction(sender_publicKey, receiver_publicKey, amount, isGenesis=F
         #Check balance
         if balance-amount >= 0:
             newTransaction = Transaction(transaction_id, sender_publicKey, receiver_publicKey, amount, transaction_inputs, transaction_outputs)
-            print("Enough Money for the transaction")
+            #print("Enough Money for the transaction")
             return newTransaction
             
         else:
-            print("Not enough money for the transaction")
+            #print("Not enough money for the transaction")
             return None
 
 
@@ -174,7 +174,7 @@ def sign_transaction(transaction, node):
     h = SHA256.new(message)
     signature = pss.new(key).sign(h)
     transaction.signature = signature
-    print("Transaction signed")
+    #print("Transaction signed")
 
 
 def verify_signature(transaction, node):
@@ -185,10 +185,10 @@ def verify_signature(transaction, node):
     verifier = pss.new(key)
     try:
         verifier.verify(h, transaction.signature)
-        print ("The signature is authentic.")
+        #print ("The signature is authentic.")
         return True
     except (ValueError, TypeError):
-        print ("The signature is not authentic.")
+        #print ("The signature is not authentic.")
         return False
 
 # def validate_transaction(transaction, node):
@@ -228,18 +228,18 @@ def validate_transaction(transaction,node):
         for node in nodes:
             if node.wallet.public_key == transaction.receiver_publicKey:
                 node.UTXOs.append(transaction.transaction_outputs[0])
-                print('Targeted wallet is available')
+                #print('Targeted wallet is available')
         return True
     else:
         #One input is not from unspent money!
-        print("You're trying to use money wich is not from you're unspent money!")
+        #print("You're trying to use money wich is not from you're unspent money!")
         return False
         
 
 def broadcast_transaction(transaction):
     for node in nodes:
         node.jcurrentBlock.transactions.append(transaction)
-    print("Transaction broadcasted to all nodes")
+    #print("Transaction broadcasted to all nodes")
             
 
 def wallet_balance(wallet):  
@@ -273,7 +273,7 @@ def mine_block(node, difficulty):
 def broadcast_block(block):
     for node in nodes:
         node.jcurrentBlock = block
-    print("First mined block is broadcasted to all other nodes")
+    #print("First mined block is broadcasted to all other nodes")
 
 def validate_block(node):
     newBlock = node.jcurrentBlock
@@ -282,19 +282,41 @@ def validate_block(node):
     hash_result = hashlib.sha256(data).hexdigest()
     # if hash_result != vars(newBlock)['current_hash']:
     if hash_result != newBlock.current_hash:
-        print("Error in block validation")
+        #print("Error in block validation")
         return False
 
     # if vars(newBlock)['previous_hash'] != vars(prevBlock)['current_hash']:
     if newBlock.previous_hash != prevBlock.current_hash:
-        print("Error in block validation")
+        #print("Error in block validation")
         return False
 
-    else:
+    return True
+    
+def validate_chain():
+
+    for i in range(len(blockchain)):
+        newBlock = blockchain[i+1]
+        prevBlock = blockchain[i]
+
+        data = f"{newBlock.timestamp}{newBlock.transactions}{newBlock.nonce}{newBlock.previous_hash}".encode()
+        
+        hash_result = hashlib.sha256(data).hexdigest()
+
+        if hash_result != newBlock.current_hash:
+            return False
+
+    # if vars(newBlock)['previous_hash'] != vars(prevBlock)['current_hash']:
+        if newBlock.previous_hash != prevBlock.current_hash:
+            #print("Error in block validation")
+            return False
+
         return True
+
+
+
     
 def view_transactions():
-    print("------------------VIEW TRANSACTIONS--------------------")
+    #print("------------------VIEW TRANSACTIONS--------------------")
     
     #print(vars(blockchain[0].transactions))
     my_dict = {}
@@ -305,7 +327,7 @@ def view_transactions():
     
 
 #---------------------------------------------------------------------------------------------------------------
-def make_transaction(nodes, nodeSender, nodeRecever, amount, capacity):
+def make_transaction(nodes, nodeSender, nodeRecever, amount, capacity, difficulty):
 
     test_transaction = create_transaction(nodeSender.wallet.public_key, nodeRecever.wallet.public_key, amount)
     if test_transaction != None:
@@ -318,7 +340,7 @@ def make_transaction(nodes, nodeSender, nodeRecever, amount, capacity):
     mined = {}
     for node in nodes: 
         if len(node.jcurrentBlock.transactions) == capacity:
-            mined_block, finTime = mine_block(node,3)
+            mined_block, finTime = mine_block(node,difficulty)
             timeList = timeList | {node.id : finTime}
             mined = mined | {node.id : mined_block}
 
@@ -326,13 +348,13 @@ def make_transaction(nodes, nodeSender, nodeRecever, amount, capacity):
         timeListSorted = dict(sorted(timeList.items(), key=lambda item:item[1], reverse=False))
         idGoodMinedBlock = list(timeListSorted.keys())[0]
         goodMinedBlock = list(mined.items())[idGoodMinedBlock][1]
-        print(goodMinedBlock)
+        #print(goodMinedBlock)
         broadcast_block(goodMinedBlock)
 
         for node in nodes:
             if validate_block(node):
                     mined_block.index = len(node.validateBlocks)
-                    print(node.id," validate block",mined_block.index)
+                    #print(node.id," validate block",mined_block.index)
                     node.validateBlocks.append(mined_block)
                     # print('girafe',vars(mined_block.transactions))
             node.jcurrentBlock = Block(time.time(),[],mined_block.current_hash)
@@ -346,22 +368,45 @@ def make_transaction(nodes, nodeSender, nodeRecever, amount, capacity):
             else:
                 if len(node.validateBlocks)>len(previousNode.validateBlocks):
                     selectedNode = node
-        print(selectedNode.validateBlocks[-1])
+        #print(selectedNode.validateBlocks[-1])
         blockchain.append(selectedNode.validateBlocks[-1])
+        #print(f"Is the chain validated ? {validate_chain()}")
         
         timeList = {}
         timeListSorted = {}
         mined = {}
 
-def readTransactionTxt(txtPath):
+
+def throughput(txtPath):
     with open(txtPath, "r") as f:
         datas = f.read()
-    sender = re.search(r'\d{1,2}', txtPath).group()
+    sender = int(re.search(r'\d{1,2}', txtPath).group())
     balise_receiver = "<recipient_node_id>(.+?)</recipient_node_id>"
     balise_amount = "<amount>(.+?)</amount>"
     receivers = re.findall(balise_receiver, datas)
     amounts = re.findall(balise_amount, datas)
-    return sender, receivers, amounts
+
+    for i in range(len(receivers)):
+
+        test_transaction = create_transaction(nodes[sender].wallet.public_key, nodes[int(receivers[i])].wallet.public_key, int(amounts[i]))
+        if test_transaction != None:
+            sign_transaction(test_transaction,nodes[sender])
+            verify_signature(test_transaction,nodes[sender])
+            if validate_transaction(test_transaction,nodes[sender]):
+                broadcast_transaction(test_transaction)
+    return len(receivers)
+
+def block_time(txtPath, capacity, difficulty):
+    with open(txtPath, "r") as f:
+        datas = f.read()
+    sender = int(re.search(r'\d{1,2}', txtPath).group())
+    balise_receiver = "<recipient_node_id>(.+?)</recipient_node_id>"
+    balise_amount = "<amount>(.+?)</amount>"
+    receivers = re.findall(balise_receiver, datas)
+    amounts = re.findall(balise_amount, datas)
+
+    for i in range(len(receivers)):
+        make_transaction(nodes, nodes[sender], nodes[int(receivers[i])], int(amounts[i]), capacity, difficulty)
 
 #---------------------------------------------------------------------------------------------------------------
 #Test ZOne
@@ -370,6 +415,7 @@ nodes = list()
 blockchain = []
 initialNodeNumber = 5
 capacity = 3
+difficulty = 3
 def Init_Nodes(nodes,initialNodeNumber):
     for i in range(initialNodeNumber):
         nodes.append(Node(initialNodeNumber))
@@ -377,9 +423,38 @@ def Init_Nodes(nodes,initialNodeNumber):
 Init_Nodes(nodes,5)
 print ('Nombre de nodes:',len(nodes))
 for i in range (initialNodeNumber-1):
-    make_transaction(nodes, nodes[0], nodes[i+1], 100, capacity)
+    make_transaction(nodes, nodes[0], nodes[i+1], 100, capacity, difficulty)
 
-sender, receivers, amounts =readTransactionTxt("transactions_files/transaction0.txt")
 
-# for i in range (len(receivers)):
-#     make_transaction(nodes,nodes[int(sender)],nodes[int(receivers[i])],int(amounts[i]),capacity)
+def test_performance_1():
+    sTime = time.time()
+    len1 = throughput("transactions_files/transaction0.txt")
+    len2 = throughput("transactions_files/transaction1.txt")
+    len3 = throughput("transactions_files/transaction2.txt")
+    len4 = throughput("transactions_files/transaction3.txt")
+    len5 = throughput("transactions_files/transaction4.txt")
+    eTime = time.time()
+    difference = eTime - sTime
+    transPerSec = (len1+len2+len3+len4+len5) / difference
+    print(f"\nThroughput = {transPerSec} transactions/second\n")
+
+def test_performance_2(capacity, difficulty):
+    sTime = time.time()
+    block_time("transactions_files/transaction0.txt", capacity, difficulty)
+    block_time("transactions_files/transaction1.txt", capacity, difficulty)
+    block_time("transactions_files/transaction2.txt", capacity, difficulty)
+    block_time("transactions_files/transaction3.txt", capacity, difficulty)
+    block_time("transactions_files/transaction4.txt", capacity, difficulty)
+    eTime = time.time()
+    difference = eTime - sTime
+    blockTime = len(blockchain)/difference
+    print(f"capacity={capacity}, difficulty={difficulty}, blockTime={blockTime} block_added/sec\n")
+
+# test_performance_1()
+
+# test_performance_2(1,4)
+# test_performance_2(1,5)
+# test_performance_2(5,4)
+# test_performance_2(5,5)
+# test_performance_2(10,4)
+# test_performance_2(10,5)
