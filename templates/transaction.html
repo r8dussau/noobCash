@@ -6,14 +6,14 @@
 </head>
 <body>
     <select name="sender" id="sender-select">
-        <option value="">Please choose the id of the sender</option>
+        <option value="">Please choose the sender ID</option>
         {% for option1 in my_list %}
         <option value="{{ option1 }}">{{ option1 }}</option>
         {% endfor %}
     </select>
     <br>
     <select name="reciever" id="reciever-select">
-        <option value="">Please choose the id of the reciever</option>
+        <option value="">Please choose the reciever ID</option>
         {% for option2 in my_list %}
         <option value="{{ option2 }}">{{ option2 }}</option>
         {% endfor %}

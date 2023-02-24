@@ -10,13 +10,13 @@
     <h1>Balance</h1>
 
     <select name="sender" id="sender-select">
-        <option value="">Please choose an option</option>
+        <option value="">Please choose the wallet ID you wish to view</option>
         {% for option in my_list %}
         <option value="{{ option }}">{{ option }}</option>
         {% endfor %}
     </select>
 
-    <button id="id_validate">Validate</button>
+    <button id="id_validate">Submit</button>
 
     <p id="id_balance"></p>
 
