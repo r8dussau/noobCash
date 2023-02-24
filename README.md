@@ -46,7 +46,6 @@ Press CTRL+C to quit
  * Debugger PIN: 770-094-169
 ```
 
-The http link is the local host link you should copy past in your browser to test all endpoint.  
 You should then enter this link on your browser to start the test:
 
 ```bash
