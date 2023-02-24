@@ -295,11 +295,17 @@ def validate_block(node):
 def view_transactions():
     print("------------------VIEW TRANSACTIONS--------------------")
     
-    print(vars(blockchain[0].transactions))
-    
-    for i in range (len(blockchain[-1].transactions)):
-        print(blockchain[-1].transactions[i].amount)
-        print(blockchain[-1].transactions[i].transaction_id)
+    #print(vars(blockchain[0].transactions))
+    my_dict = {}
+
+    if blockchain[-1].transactions.transaction_id=="genesis":
+        my_dict = {blockchain[-1].transactions.transaction_id : blockchain[-1].transactions.amount}
+
+    else:
+        for i in range (len(blockchain[-1].transactions)):
+            my_dict = my_dict | {blockchain[-1].transactions[i].transaction_id : blockchain[-1].transactions[i].amount}
+
+    return my_dict
     
 
 #---------------------------------------------------------------------------------------------------------------
@@ -389,6 +395,5 @@ b4 = wallet_balance(nodes[4].wallet)
 print('b4:',b4)
 
 
-print(blockchain[0].transactions)
-
-#view_transactions()
+#print(blockchain[0].transactions)
+print(view_transactions())

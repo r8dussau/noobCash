@@ -1,5 +1,5 @@
 from flask import Flask, request, send_file, render_template
-from noobcash_api import nodes, wallet_balance, make_transaction
+from noobcash_api import nodes, wallet_balance, make_transaction, view_transactions
 
 #---------------------------------------------------------------------------------------------------------------
 #Aciver l'environnement virtuel:
