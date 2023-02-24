@@ -294,9 +294,6 @@ def validate_block(node):
         return True
     
 def view_transactions():
-    print("------------------VIEW TRANSACTIONS--------------------")
-    
-    #print(vars(blockchain[0].transactions))
     my_dict = {}
     for i in range (len(blockchain[-1].transactions)):
         my_dict = my_dict | {blockchain[-1].transactions[i].transaction_id : blockchain[-1].transactions[i].amount}
@@ -353,7 +350,7 @@ def make_transaction(nodes, nodeSender, nodeRecever, amount, capacity):
         timeListSorted = {}
         mined = {}
 
-def readTransactionTxt(txtPath):
+def makeTransactionsFromTxt(txtPath):
     with open(txtPath, "r") as f:
         datas = f.read()
     sender = re.search(r'\d{1,2}', txtPath).group()
@@ -361,7 +358,11 @@ def readTransactionTxt(txtPath):
     balise_amount = "<amount>(.+?)</amount>"
     receivers = re.findall(balise_receiver, datas)
     amounts = re.findall(balise_amount, datas)
-    return sender, receivers, amounts
+
+    for i in range (len(receivers)):
+        make_transaction(nodes,nodes[int(sender)],nodes[int(receivers[i])],int(amounts[i]),capacity)
+
+
 
 #---------------------------------------------------------------------------------------------------------------
 #Test ZOne
@@ -379,7 +380,11 @@ print ('Nombre de nodes:',len(nodes))
 for i in range (initialNodeNumber-1):
     make_transaction(nodes, nodes[0], nodes[i+1], 100, capacity)
 
-sender, receivers, amounts =readTransactionTxt("transactions_files/transaction0.txt")
+makeTransactionsFromTxt("transactions_files/transaction0.txt")
 
-# for i in range (len(receivers)):
-#     make_transaction(nodes,nodes[int(sender)],nodes[int(receivers[i])],int(amounts[i]),capacity)
+b0 = wallet_balance(nodes[0].wallet)
+print('b0:',b0)
+
+b1 = wallet_balance(nodes[1].wallet)
+print('b1:',b1)
+
