@@ -1,22 +1,22 @@
 <transactions>
     <transaction>
-        <recipient_node_id>1</recipient_node_id>
-        <amount>3</amount>
-    </transaction>
-    <transaction>
-        <recipient_node_id>3</recipient_node_id>
-        <amount>7</amount>
-    </transaction>
-    <transaction>
-        <recipient_node_id>3</recipient_node_id>
-        <amount>9</amount>
-    </transaction>
-    <transaction>
-        <recipient_node_id>2</recipient_node_id>
+        <recipient_node_id>0</recipient_node_id>
         <amount>11</amount>
     </transaction>
     <transaction>
+        <recipient_node_id>0</recipient_node_id>
+        <amount>4</amount>
+    </transaction>
+    <transaction>
+        <recipient_node_id>3</recipient_node_id>
+        <amount>1</amount>
+    </transaction>
+    <transaction>
         <recipient_node_id>4</recipient_node_id>
-        <amount>2</amount>
+        <amount>5</amount>
+    </transaction>
+    <transaction>
+        <recipient_node_id>4</recipient_node_id>
+        <amount>6</amount>
     </transaction>
 </transaction>

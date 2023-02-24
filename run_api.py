@@ -1,8 +1,8 @@
-from flask import Flask, request, send_file, render_template
-from noobcash_api import nodes, wallet_balance, make_transaction, view_transactions, capacity
+from flask import Flask, request, render_template
+from noobcash_api import nodes, wallet_balance, make_transaction, view_transactions, capacity, difficulty
 
 #---------------------------------------------------------------------------------------------------------------
-#Aciver l'environnement virtuel:
+#activate the virtual environment:
         #env_noobcash\Scripts\activate
 
 #set up flask app for the env (need to restart after)
@@ -53,7 +53,7 @@ def call_function():
         id_sender = request.json['option1']
         id_reciever = request.json['option2']
         amount = request.json['amount']
-        make_transaction(nodes,nodes[int(id_sender)], nodes[int(id_reciever)], int(amount), capacity)
+        make_transaction(nodes,nodes[int(id_sender)], nodes[int(id_reciever)], int(amount), capacity, difficulty)
         return amount
     
     if function_name == 'view_transaction':
