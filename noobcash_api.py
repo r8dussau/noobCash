@@ -409,7 +409,10 @@ print('b0:',b0)
 b1 = wallet_balance(nodes[1].wallet)
 print('b1:',b1)
 
-make_transaction(nodes, nodes[0], nodes[1], 10, 2)
+make_transaction(nodes, nodes[0], nodes[1], 10, capacity)
+make_transaction(nodes, nodes[0], nodes[1], 10, capacity)
+
+view_transactions()
 print(len(blockchain))
 # print(blockchain[0].transactions)
 
