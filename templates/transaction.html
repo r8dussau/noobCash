@@ -6,16 +6,61 @@
 </head>
 <body>
     <select name="sender" id="sender-select">
-        <option value="">Please choose an option</option>
+        <option value="">Please choose the id of the sender</option>
+        {% for option1 in my_list %}
+        <option value="{{ option1 }}">{{ option1 }}</option>
+        {% endfor %}
     </select>
     <br>
     <select name="reciever" id="reciever-select">
-        <option value="">Please choose an option</option>
+        <option value="">Please choose the id of the reciever</option>
+        {% for option2 in my_list %}
+        <option value="{{ option2 }}">{{ option2 }}</option>
+        {% endfor %}
     </select>
     <br>    
-    <input type="number" min="0" step="1">
+    <input type="number" min="0" step="1" id="id_amount"></body>
 
     <button id="bt_submit">Submit</button>
+
+    <p id="id_transaction"></p>
+
+    <script>
+        document.getElementById('bt_submit').addEventListener('click', function(){
+            var dropdown1 = document.getElementById('sender-select');
+            var selectedOption1 = dropdown1.options[dropdown1.selectedIndex].value;
+
+            var dropdown2 = document.getElementById('reciever-select');
+            var selectedOption2 = dropdown2.options[dropdown2.selectedIndex].value;
+
+            var amount = document.getElementById("id_amount").value
+
+            if(selectedOption1==="" || selectedOption2===""){
+                document.getElementById('id_transaction').innerHTML = "Please select an id"
+            } else if (amount===""){
+                document.getElementById('id_transaction').innerHTML = "Please select an amount"
+            } 
+            else{
+                call_function('make_transaction', selectedOption1, selectedOption2, amount)
+            }
+        })
+
+        function call_function(function_name, option1, option2, amount) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/call-function');
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function() {
+               if (xhr.status === 200) {
+                document.getElementById('id_transaction').innerHTML = "The id " + option1 + " sent " + xhr.responseText + " NBC to the id " + option2
+            }
+               else {
+                    alert('Une erreur est survenue : ' + xhr.status);
+                }
+            };
+            xhr.send(JSON.stringify({ 'function_name': function_name, 'option1': option1, 'option2': option2, 'amount': amount }));
+        }
+
+    </script>
 
 </body>
 </html>
