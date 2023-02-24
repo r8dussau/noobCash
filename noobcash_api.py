@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, send_file
 
 #Pycryptodome
-#pip install pycroptodome 
+#pip install pycryptodome 
 #doc:https://pycryptodome.readthedocs.io/en/latest/
 from Crypto.Signature import pss
 from Crypto.Hash import SHA256
@@ -32,7 +32,6 @@ class Node:
         self.ipPort = randint(0,5000)
         self.wallet = create_wallet(self.id,2048)
         self.validateBlocks = list()
-        self.iteration = 0
         self.UTXOs = []
 
         #Create genesis block
