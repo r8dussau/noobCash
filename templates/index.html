@@ -6,25 +6,30 @@
 </head>
 <body>
     <h1>NoobCash</h1>
-    <p>Images</p>
+
     <button id="bt_transaction">New transaction</button>
     <button id="bt_view">View last transactions</button>
     <button id="bt_balance">Show balance</button>
     <button id="bt_help">Help</button>
 
     <br>
-    <iframe id="heart-frame" width="100%" height="250px" src="" frameborder="1" style="display: none;"></iframe>
+    <iframe id="heart-frame" width="80%" height="200px" src="" frameborder="1" style="display: none;"></iframe>
     
     <p id="id_empty"></p>
 
-    <h1>Bas de page</h1>
+    <h3>Authors of this project:</h3>
+    <ul>
+      <li>Kubiszewski Szymon</li>
+      <li>Morin Jules</li>
+      <li>Dussauze Raphaël</li>
+    </ul>
 
     
     <script>
 
       function checkEmpty(){
         if(document.getElementById('heart-frame').src ==="http://127.0.0.1:9103/noobcash"){
-          document.getElementById('id_empty').innerHTML = 'Aucun contenu disponible';
+          document.getElementById('id_empty').innerHTML = 'Please click on one of the buttons above.';
           document.getElementById('heart-frame').style.display = "none";
         } else{
           document.getElementById('id_empty').innerHTML = '';
