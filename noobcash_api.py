@@ -1,5 +1,3 @@
-from flask import Flask, render_template, request, send_file
-
 #Pycryptodome
 #pip install pycroptodome 
 #doc:https://pycryptodome.readthedocs.io/en/latest/
@@ -316,9 +314,6 @@ def validate_chain():
 
     
 def view_transactions():
-    #print("------------------VIEW TRANSACTIONS--------------------")
-    
-    #print(vars(blockchain[0].transactions))
     my_dict = {}
     for i in range (len(blockchain[-1].transactions)):
         my_dict = my_dict | {blockchain[-1].transactions[i].transaction_id : blockchain[-1].transactions[i].amount}
@@ -328,7 +323,6 @@ def view_transactions():
 
 #---------------------------------------------------------------------------------------------------------------
 def make_transaction(nodes, nodeSender, nodeRecever, amount, capacity, difficulty):
-
     test_transaction = create_transaction(nodeSender.wallet.public_key, nodeRecever.wallet.public_key, amount)
     if test_transaction != None:
         sign_transaction(test_transaction,nodeSender)
@@ -376,6 +370,8 @@ def make_transaction(nodes, nodeSender, nodeRecever, amount, capacity, difficult
         timeListSorted = {}
         mined = {}
 
+#---------------------------------------------------------------------------------------------------------------
+#Experimental evaluation
 
 def throughput(txtPath):
     with open(txtPath, "r") as f:
@@ -387,7 +383,6 @@ def throughput(txtPath):
     amounts = re.findall(balise_amount, datas)
 
     for i in range(len(receivers)):
-
         test_transaction = create_transaction(nodes[sender].wallet.public_key, nodes[int(receivers[i])].wallet.public_key, int(amounts[i]))
         if test_transaction != None:
             sign_transaction(test_transaction,nodes[sender])
@@ -404,9 +399,54 @@ def block_time(txtPath, capacity, difficulty):
     balise_amount = "<amount>(.+?)</amount>"
     receivers = re.findall(balise_receiver, datas)
     amounts = re.findall(balise_amount, datas)
-
     for i in range(len(receivers)):
         make_transaction(nodes, nodes[sender], nodes[int(receivers[i])], int(amounts[i]), capacity, difficulty)
+
+def test_performance_1(capacity, difficulty):
+    for i in range (initialNodeNumber-1):
+        make_transaction(nodes, nodes[0], nodes[i+1], 100, capacity, difficulty)
+    sTime = time.time()
+    len1 = throughput("transactions_files/transaction0.txt")
+    len2 = throughput("transactions_files/transaction1.txt")
+    len3 = throughput("transactions_files/transaction2.txt")
+    len4 = throughput("transactions_files/transaction3.txt")
+    len5 = throughput("transactions_files/transaction4.txt")
+    eTime = time.time()
+    difference = eTime - sTime
+    transPerSec = (len1+len2+len3+len4+len5) / difference
+    print(f"Throughput = {transPerSec} transactions served per second for a capacity = {capacity} and a difficulty = {difficulty}\n")
+
+def test_performance_2(capacity, difficulty):
+    for i in range (initialNodeNumber-1):
+        make_transaction(nodes, nodes[0], nodes[i+1], 100, capacity, difficulty)
+    sTime = time.time()
+    block_time("transactions_files/transaction0.txt", capacity, difficulty)
+    block_time("transactions_files/transaction1.txt", capacity, difficulty)
+    block_time("transactions_files/transaction2.txt", capacity, difficulty)
+    block_time("transactions_files/transaction3.txt", capacity, difficulty)
+    block_time("transactions_files/transaction4.txt", capacity, difficulty)
+    eTime = time.time()
+    difference = eTime - sTime
+    blockTime = difference/ len(blockchain)
+    print(f"BlockTime = {blockTime}sec to add a block in the blockchain for a capacity = {capacity} and a difficulty = {difficulty}\n")
+
+# print("\nPerformance Test 1:\n")
+# test_performance_1(1,4)
+# test_performance_1(1,5)
+# test_performance_1(5,4)
+# test_performance_1(5,5)
+# test_performance_1(10,4)
+# test_performance_1(10,5)
+
+# print("\nPerformance Test 2:\n")
+# test_performance_2(1,4)
+# test_performance_2(1,5)
+# test_performance_2(5,4)
+# test_performance_2(5,5)
+# test_performance_2(10,4)
+# test_performance_2(10,5)
+
+
 
 #---------------------------------------------------------------------------------------------------------------
 #Test ZOne
@@ -414,7 +454,7 @@ def block_time(txtPath, capacity, difficulty):
 nodes = list()
 blockchain = []
 initialNodeNumber = 5
-capacity = 3
+capacity = 1
 difficulty = 3
 def Init_Nodes(nodes,initialNodeNumber):
     for i in range(initialNodeNumber):
@@ -426,35 +466,3 @@ for i in range (initialNodeNumber-1):
     make_transaction(nodes, nodes[0], nodes[i+1], 100, capacity, difficulty)
 
 
-def test_performance_1():
-    sTime = time.time()
-    len1 = throughput("transactions_files/transaction0.txt")
-    len2 = throughput("transactions_files/transaction1.txt")
-    len3 = throughput("transactions_files/transaction2.txt")
-    len4 = throughput("transactions_files/transaction3.txt")
-    len5 = throughput("transactions_files/transaction4.txt")
-    eTime = time.time()
-    difference = eTime - sTime
-    transPerSec = (len1+len2+len3+len4+len5) / difference
-    print(f"\nThroughput = {transPerSec} transactions/second\n")
-
-def test_performance_2(capacity, difficulty):
-    sTime = time.time()
-    block_time("transactions_files/transaction0.txt", capacity, difficulty)
-    block_time("transactions_files/transaction1.txt", capacity, difficulty)
-    block_time("transactions_files/transaction2.txt", capacity, difficulty)
-    block_time("transactions_files/transaction3.txt", capacity, difficulty)
-    block_time("transactions_files/transaction4.txt", capacity, difficulty)
-    eTime = time.time()
-    difference = eTime - sTime
-    blockTime = len(blockchain)/difference
-    print(f"capacity={capacity}, difficulty={difficulty}, blockTime={blockTime} block_added/sec\n")
-
-# test_performance_1()
-
-# test_performance_2(1,4)
-# test_performance_2(1,5)
-# test_performance_2(5,4)
-# test_performance_2(5,5)
-# test_performance_2(10,4)
-# test_performance_2(10,5)

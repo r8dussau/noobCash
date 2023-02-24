@@ -2,7 +2,7 @@ from flask import Flask, request, render_template
 from noobcash_api import nodes, wallet_balance, make_transaction, view_transactions, capacity, difficulty
 
 #---------------------------------------------------------------------------------------------------------------
-#Aciver l'environnement virtuel:
+#activate the virtual environment:
         #env_noobcash\Scripts\activate
 
 #set up flask app for the env (need to restart after)
