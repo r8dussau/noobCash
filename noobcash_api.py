@@ -297,15 +297,10 @@ def view_transactions():
     
     #print(vars(blockchain[0].transactions))
     my_dict = {}
-
-    if blockchain[-1].transactions.transaction_id=="genesis":
-        my_dict = {blockchain[-1].transactions.transaction_id : blockchain[-1].transactions.amount}
-
-    else:
-        for i in range (len(blockchain[-1].transactions)):
-            my_dict = my_dict | {blockchain[-1].transactions[i].transaction_id : blockchain[-1].transactions[i].amount}
-
+    for i in range (len(blockchain[-1].transactions)):
+        my_dict = my_dict | {blockchain[-1].transactions[i].transaction_id : blockchain[-1].transactions[i].amount}
     return my_dict
+
     
 
 #---------------------------------------------------------------------------------------------------------------
@@ -363,6 +358,7 @@ def make_transaction(nodes, nodeSender, nodeRecever, amount, capacity):
 nodes = list()
 blockchain = []
 initialNodeNumber = 5
+capacity = 3
 def Init_Nodes(nodes,initialNodeNumber):
     for i in range(initialNodeNumber):
         nodes.append(Node(initialNodeNumber))
@@ -372,16 +368,10 @@ def Init_Nodes(nodes,initialNodeNumber):
 Init_Nodes(nodes,5)
 print ('Nombre de nodes:',len(nodes))
 for i in range (initialNodeNumber-1):
-    make_transaction(nodes, nodes[0], nodes[i+1], 100, 2)
+    make_transaction(nodes, nodes[0], nodes[i+1], 100, capacity)
 
-
-make_transaction(nodes, nodes[0], nodes[1], 10, 2)
-make_transaction(nodes, nodes[0], nodes[1], 10, 2)
-make_transaction(nodes, nodes[0], nodes[1], 10, 2)
-
-make_transaction(nodes, nodes[0], nodes[1], 10, 2)
-
-make_transaction(nodes, nodes[0], nodes[1], 10, 2)
+make_transaction(nodes, nodes[0], nodes[1], 10, capacity)
+#make_transaction(nodes, nodes[0], nodes[1], 10, capacity)
 
 b0 = wallet_balance(nodes[0].wallet)
 print('b0:',b0)
@@ -393,8 +383,3 @@ b3 = wallet_balance(nodes[3].wallet)
 print('b3:',b3)
 b4 = wallet_balance(nodes[4].wallet)
 print('b4:',b4)
-print(len(blockchain))
-
-
-#print(blockchain[0].transactions)
-print(view_transactions())

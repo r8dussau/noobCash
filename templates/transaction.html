@@ -37,6 +37,8 @@
 
             if(selectedOption1==="" || selectedOption2===""){
                 document.getElementById('id_transaction').innerHTML = "Please select an id"
+            } else if (selectedOption1===selectedOption2){
+                document.getElementById('id_transaction').innerHTML = "You can't select the same id for the sender and the reciever"
             } else if (amount===""){
                 document.getElementById('id_transaction').innerHTML = "Please select an amount"
             } 

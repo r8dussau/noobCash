@@ -1,5 +1,5 @@
 from flask import Flask, request, send_file, render_template
-from noobcash_api import nodes, wallet_balance, make_transaction, view_transactions
+from noobcash_api import nodes, wallet_balance, make_transaction, view_transactions, capacity
 
 #---------------------------------------------------------------------------------------------------------------
 #Aciver l'environnement virtuel:
@@ -55,6 +55,10 @@ def call_function():
         amount = request.json['amount']
         make_transaction(nodes,nodes[int(id_sender)], nodes[int(id_reciever)], int(amount), 4)
         return amount
+    
+    if function_name == 'view_transaction':
+        my_dict = view_transactions()
+        return my_dict
 
     return "Nothing is called"
 
