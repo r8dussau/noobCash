@@ -107,12 +107,12 @@ def create_wallet(nodeID, size):
     key = RSA.generate(size)
     #Private Key writen in private_nodeNumber.pem
     private_key = key.export_key()
-    file_out = open("private_"+str(id)+".pem", "wb")
+    file_out = open("key_folder/private_"+str(id)+".pem", "wb")
     file_out.write(private_key)
     file_out.close()
     #Public Key writen in public_nodeNumber.pem
     public_key = key.publickey().export_key()
-    file_out = open("public_"+str(id)+".pem", "wb")
+    file_out = open("key_folder/public_"+str(id)+".pem", "wb")
     file_out.write(public_key)
     file_out.close()
 
@@ -169,7 +169,7 @@ def create_transaction(sender_publicKey, receiver_publicKey, amount, isGenesis=F
 def sign_transaction(transaction, node):
     message = (str(transaction.sender_publicKey) + str(transaction.receiver_publicKey) + str(transaction.amount)).encode()
     node_id = node.id
-    key = RSA.import_key(open('private_'+str(node_id)+'.pem').read())
+    key = RSA.import_key(open('key_folder/private_'+str(node_id)+'.pem').read())
     h = SHA256.new(message)
     signature = pss.new(key).sign(h)
     transaction.signature = signature
@@ -178,7 +178,7 @@ def sign_transaction(transaction, node):
 
 def verify_signature(transaction, node):
     node_id = node.id
-    key = RSA.import_key(open('public_'+str(node_id)+'.pem').read())
+    key = RSA.import_key(open('key_folder/public_'+str(node_id)+'.pem').read())
     message = (str(transaction.sender_publicKey) + str(transaction.receiver_publicKey) + str(transaction.amount)).encode()
     h = SHA256.new(message)
     verifier = pss.new(key)
@@ -265,13 +265,7 @@ def mine_block(node, difficulty):
         nonce += 1
     mined_block = node.jcurrentBlock
 
-    #---------------------------------------------
     finTime = int(time.time()*1000000)-int(debutTime*1000000)
-    # print("\n\n\n")
-    # print(time.time())
-    # print(debutTime)
-    # print(finTime)
-    #---------------------------------------------
 
     return mined_block, finTime
 
@@ -300,13 +294,16 @@ def validate_block(node):
     
 def view_transactions():
     print("------------------VIEW TRANSACTIONS--------------------")
+    
+    print(vars(blockchain[0].transactions))
+    
     for i in range (len(blockchain[-1].transactions)):
         print(blockchain[-1].transactions[i].amount)
         print(blockchain[-1].transactions[i].transaction_id)
     
 
 #---------------------------------------------------------------------------------------------------------------
-def transaction(nodes, nodeSender, nodeRecever, amount, capacity):
+def make_transaction(nodes, nodeSender, nodeRecever, amount, capacity):
 
     test_transaction = create_transaction(nodeSender.wallet.public_key, nodeRecever.wallet.public_key, amount)
     if test_transaction != None:
@@ -347,11 +344,13 @@ def transaction(nodes, nodeSender, nodeRecever, amount, capacity):
             else:
                 if len(node.validateBlocks)>len(previousNode.validateBlocks):
                     selectedNode = node
+        print(selectedNode.validateBlocks[-1])
         blockchain.append(selectedNode.validateBlocks[-1])
         
         timeList = {}
         timeListSorted = {}
         mined = {}
+
 #---------------------------------------------------------------------------------------------------------------
 #Test ZOne
 #Listes des nodes:
@@ -367,7 +366,16 @@ def Init_Nodes(nodes,initialNodeNumber):
 Init_Nodes(nodes,5)
 print ('Nombre de nodes:',len(nodes))
 for i in range (initialNodeNumber-1):
-    transaction(nodes, nodes[0], nodes[i+1], 100, 2)
+    make_transaction(nodes, nodes[0], nodes[i+1], 100, 2)
+
+
+make_transaction(nodes, nodes[0], nodes[1], 10, 2)
+make_transaction(nodes, nodes[0], nodes[1], 10, 2)
+make_transaction(nodes, nodes[0], nodes[1], 10, 2)
+
+make_transaction(nodes, nodes[0], nodes[1], 10, 2)
+
+make_transaction(nodes, nodes[0], nodes[1], 10, 2)
 
 b0 = wallet_balance(nodes[0].wallet)
 print('b0:',b0)
@@ -381,45 +389,7 @@ b4 = wallet_balance(nodes[4].wallet)
 print('b4:',b4)
 print(len(blockchain))
 
+
+print(blockchain[0].transactions)
+
 #view_transactions()
-
-# def minage(nodes):
-#     timeList = {}
-#     mined = {}
-#     for node in nodes: 
-#         if len(node.jcurrentBlock.transactions) == 2:
-#             mined_block, finTime = mine_block(node,3)
-#             timeList = timeList | {node.id : finTime}
-#             mined = mined | {node.id : mined_block}
-        
-#     timeListSorted = dict(sorted(timeList.items(), key=lambda item:item[1], reverse=False))
-#     idGoodMinedBlock = list(timeListSorted.keys())[0]
-#     goodMinedBlock = list(mined.items())[idGoodMinedBlock][1]
-
-#     broadcast_block(goodMinedBlock)
-
-#     for node in nodes:
-#         if validate_block(node):
-#                 mined_block.index = len(node.validateBlocks)
-#                 node.validateBlocks.append(mined_block)
-#         node.jcurrentBlock = Block(time.time(),[],mined_block.current_hash)
-
-#     print(timeList)
-#     print(timeListSorted)
-#     print(mined)
-#     print(goodMinedBlock)
-
-
-def best_mined_block(nodes):
-    order = {}
-    mined = {}
-    for node in nodes:
-        order = order | {node.id : node.finTime}
-        mined = mined | {node.id : node.mined_block}
-        
-    orderSorted = dict(sorted(order.items(), key=lambda item:item[1], reverse=False))
-    idMINER = list(orderSorted.keys())[0]
-    leBlockSuperBienMine = list(mined.items())[idMINER]
-    print(orderSorted)
-    print(mined)
-    print(leBlockSuperBienMine)

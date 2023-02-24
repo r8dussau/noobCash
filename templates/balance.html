@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Balance</h1>
+
+    <select name="sender" id="sender-select">
+        <option value="">Please choose an option</option>
+        {% for option in my_list %}
+        <option value="{{ option }}">{{ option }}</option>
+        {% endfor %}
+    </select>
+
+    <button id="id_validate">Validate</button>
+
+    <p id="id_balance"></p>
+
+    <script>
+
+        document.getElementById('id_validate').addEventListener('click', function(){
+            var dropdown = document.getElementById('sender-select');
+            var selectedOption = dropdown.options[dropdown.selectedIndex].value;
+            if(selectedOption===""){
+                document.getElementById('id_balance').innerHTML = "Please select an id"
+            } else{
+                call_function('import_balance', selectedOption)
+            }
+        })
+
+        function call_function(function_name, option) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/call-function');
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function() {
+               if (xhr.status === 200) {
+                   document.getElementById('id_balance').innerHTML = "The wallet balance of the id "+ option +" is :" + xhr.responseText
+               }
+               else {
+                    alert('Une erreur est survenue : ' + xhr.status);
+                }
+            };
+            xhr.send(JSON.stringify({ 'function_name': function_name, 'option': option }));
+        }
+    </script>
+
+</body>
+</html>
