@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template
-from noobcash_api import nodes, wallet_balance, make_transaction, view_transactions, capacity, difficulty
+from noobcash_api import nodes, wallet_balance, view_transactions, capacity, difficulty, make_transaction
 
 #---------------------------------------------------------------------------------------------------------------
 #activate the virtual environment:
@@ -11,6 +11,7 @@ from noobcash_api import nodes, wallet_balance, make_transaction, view_transacti
 #Run l'app flask:
         #flask run
 #---------------------------------------------------------------------------------------------------------------
+
 
 app= Flask(__name__)
 

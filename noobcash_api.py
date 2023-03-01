@@ -11,15 +11,8 @@ import time
 import re
 
 #---------------------------------------------------------------------------------------------------------------
-#Aciver l'environnement virtuel:
-        #env_noobcash\Scripts\activate
+#Class space 
 
-#set up flask app for the env (need to restart after)
-        #setx FLASK_APP "noobcash_api.py"
-
-#Run l'app flask:
-        #flask run
-#---------------------------------------------------------------------------------------------------------------
 #Node class
 class Node:
     id = 0
@@ -57,11 +50,6 @@ class Block:
         self.nonce = 0
         self.current_hash = ""
         self.previous_hash = prev_hash
-
-#Blockchain class
-class Blockchain:
-    def __init__(self):
-        self.list = list()
         
 #Wallet class
 class Wallet:
@@ -70,14 +58,12 @@ class Wallet:
         self.private_key = private_key
         #self.balance = 100
 
-#Transcation class
-#Après la derneire fondu, ce que le recipient a recu
+#Transaction_Input class
 class Transaction_Input:
     def __init__(self,previous_outputID):
         self.previous_outputID = previous_outputID
 
-# Une transaction = 2 output: -Ce que A donne à B                       EX:A a 1000 et donne 400 -> 1000 fond en 1)400 2)600, 1)part vers B
-#                             -Ce que A récupère (ce qu'il lui reste)   EX:A recoit 2)600
+#Transaction_Output class
 class Transaction_Output:
     def __init__(self, transaction_id, recipient_publicKey, amount):
         self.transaction_id = transaction_id
@@ -86,6 +72,7 @@ class Transaction_Output:
         data = (str(self.transaction_id) + str(self.recipient_publicKey) + str(self.amount)).encode()
         self.id = SHA256.new(data).hexdigest()
 
+#Transaction class
 class Transaction:
     def __init__(self, transaction_id, sender_publicKey, receiver_publicKey, amount, transaction_inputs, transaction_outputs):
         self.transaction_id = transaction_id
@@ -122,7 +109,6 @@ def create_transaction(sender_publicKey, receiver_publicKey, amount, isGenesis=F
         newTransaction =  Transaction("genesis", "0", receiver_publicKey, amount, [], [])
         return newTransaction
     else:
-    
         #Generate transaction_id with hash
         data = (str(sender_publicKey) + str(receiver_publicKey) + str(amount)).encode()
         balance = 0
@@ -238,7 +224,6 @@ def broadcast_transaction(transaction):
         node.jcurrentBlock.transactions.append(transaction)
     #print("Transaction broadcasted to all nodes")
             
-
 def wallet_balance(wallet):  
     balance = 0
     for node in nodes:
@@ -250,7 +235,6 @@ def wallet_balance(wallet):
     return balance
 
 def mine_block(node, difficulty):
-
     node.finTime = 0
     finTime = 0
     debutTime = time.time()
@@ -262,9 +246,7 @@ def mine_block(node, difficulty):
         node.jcurrentBlock.current_hash = hashlib.sha256(data).hexdigest()
         nonce += 1
     mined_block = node.jcurrentBlock
-
     finTime = int(time.time()*1000000)-int(debutTime*1000000)
-
     return mined_block, finTime
 
 def broadcast_block(block):
@@ -302,7 +284,6 @@ def validate_chain():
         if hash_result != newBlock.current_hash:
             return False
 
-    # if vars(newBlock)['previous_hash'] != vars(prevBlock)['current_hash']:
         if newBlock.previous_hash != prevBlock.current_hash:
             #print("Error in block validation")
             return False
@@ -310,17 +291,9 @@ def validate_chain():
         return True
 
 
-
-    
-def view_transactions():
-    my_dict = {}
-    for i in range (len(blockchain[-1].transactions)):
-        my_dict = my_dict | {blockchain[-1].transactions[i].transaction_id : blockchain[-1].transactions[i].amount}
-    return my_dict
-
-    
-
 #---------------------------------------------------------------------------------------------------------------
+#Function which is called by the Front-end
+
 def make_transaction(nodes, nodeSender, nodeRecever, amount, capacity, difficulty):
     test_transaction = create_transaction(nodeSender.wallet.public_key, nodeRecever.wallet.public_key, amount)
     if test_transaction != None:
@@ -364,10 +337,12 @@ def make_transaction(nodes, nodeSender, nodeRecever, amount, capacity, difficult
         #print(selectedNode.validateBlocks[-1])
         blockchain.append(selectedNode.validateBlocks[-1])
         #print(f"Is the chain validated ? {validate_chain()}")
-        
-        timeList = {}
-        timeListSorted = {}
-        mined = {}
+
+def view_transactions():
+    my_dict = {}
+    for i in range (len(blockchain[-1].transactions)):
+        my_dict = my_dict | {blockchain[-1].transactions[i].transaction_id : blockchain[-1].transactions[i].amount}
+    return my_dict
 
 #---------------------------------------------------------------------------------------------------------------
 #Experimental evaluation
@@ -401,6 +376,7 @@ def block_time(txtPath, capacity, difficulty):
     for i in range(len(receivers)):
         make_transaction(nodes, nodes[sender], nodes[int(receivers[i])], int(amounts[i]), capacity, difficulty)
 
+#Display the test of performance 1
 def test_performance_1(capacity, difficulty):
     for i in range (initialNodeNumber-1):
         make_transaction(nodes, nodes[0], nodes[i+1], 100, capacity, difficulty)
@@ -415,6 +391,7 @@ def test_performance_1(capacity, difficulty):
     transPerSec = (len1+len2+len3+len4+len5) / difference
     print(f"Throughput = {transPerSec} transactions served per second for a capacity = {capacity} and a difficulty = {difficulty}\n")
 
+#Display the test of performance 2
 def test_performance_2(capacity, difficulty):
     for i in range (initialNodeNumber-1):
         make_transaction(nodes, nodes[0], nodes[i+1], 100, capacity, difficulty)
@@ -445,15 +422,13 @@ def test_performance_2(capacity, difficulty):
 # test_performance_2(10,4)
 # test_performance_2(10,5)
 
-
-
 #---------------------------------------------------------------------------------------------------------------
-#Test ZOne
+#Initialization Area
 #Listes des nodes:
 nodes = list()
 blockchain = []
 initialNodeNumber = 5
-capacity = 1
+capacity = 3
 difficulty = 3
 def Init_Nodes(nodes,initialNodeNumber):
     for i in range(initialNodeNumber):
