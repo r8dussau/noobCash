@@ -174,25 +174,6 @@ def verify_signature(transaction, node):
         #print ("The signature is not authentic.")
         return False
 
-# def validate_transaction(transaction, node):
-#     # Check if signature is good
-#     if verify_signature(transaction, node):
-#         for input in transaction.transaction_inputs:
-#             for utxo in node.UTXOs:
-#                 if input.previous_outputID != utxo.id:
-#                     print("Some money don't come from UTXOs")
-#                     return False
-#                 else:
-#                     #Sender
-#                     node.UTXOs.remove(utxo)
-#                     node.UTXOs.append(transaction.transaction_outputs[0])#donne
-#                     node.UTXOs.append(transaction.transaction_outputs[1])#reprend
-#                     for n in nodes:
-#                         if n.wallet.public_key==transaction.receiver_publicKey:
-#                             n.UTXOs.append(transaction.transaction_outputs[0])
-#                     print('Transaction is fully validated')
-#                     return True
-
 def validate_transaction(transaction,node):
     isUTXO = False
     for input in transaction.transaction_inputs:
